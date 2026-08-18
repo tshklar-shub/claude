@@ -59,6 +59,14 @@ fell below a threshold that would have caught them before credential/reference/o
 categories were added. If you keep expanding the taxonomy, consider per-category sub-scores
 instead of one blended global number.
 
+## Evaluating against a real CV repository
+
+See [`RUNBOOK_REAL_DATASET.md`](RUNBOOK_REAL_DATASET.md) for exact steps: ingesting real
+PDF/DOCX CVs (`ingest_cvs.py`), scoring them (`score_real_dataset.py`), and generating a
+ranked, human-reviewable report (`report.py`, CSV + self-contained HTML). Read the "before
+running anything" section first — real data has no ground truth to validate against, and
+disclosure/consent considerations apply that don't exist for the synthetic set.
+
 ## Offline path (no API key, scales to hundreds of candidates)
 
 `generate_dataset.py`/`extract_cv.py`/`score_cv.py` need the Claude API. For tuning the

@@ -2,4 +2,6 @@ __pycache__/
 *.pyc
 data/db/*.sqlite3
 data/cvs_large/
+data/real_cvs_txt/
+data/reports/
 .env
