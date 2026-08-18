@@ -1,0 +1,24 @@
+David Okafor
+david.okafor@brightlinesys.com | +1 (312) 555-0198 | Chicago, IL
+linkedin.com/in/david-okafor | github.com/dokafor
+
+SUMMARY
+Data Engineer with 6 years building large-scale ETL and warehousing systems on AWS.
+
+EXPERIENCE
+Senior Data Engineer, Meridian Health Analytics (Remote) — Jan 2021 to Present
+- Designed the Airflow-orchestrated warehouse pipeline serving 40+ internal dashboards
+- Reduced nightly batch runtime from 6 hours to 90 minutes
+
+Data Engineer, Lakeview Logistics — Aug 2018 to Dec 2020
+- Built Spark jobs for shipment-tracking data, migrated legacy Redshift schemas
+
+Junior Data Engineer, Lakeview Logistics — Jun 2017 to Jul 2018
+- Maintained internal ETL scripts, on-call support
+
+EDUCATION
+M.S. Data Science, University of Illinois Chicago, 2017
+B.S. Mathematics, University of Illinois Chicago, 2015
+
+REFERENCES
+Priya Nair, Engineering Manager, Meridian Health Analytics — reachable via company directory

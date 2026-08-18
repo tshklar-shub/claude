@@ -1,0 +1,21 @@
+Laura Bianchi
+laura.bianchi@meridianhealth.io | +1 (617) 555-0164 | Boston, MA
+linkedin.com/in/laura-bianchi | github.com/lbianchi-dev
+
+SUMMARY
+Senior Backend Engineer, 7 years, healthcare data systems, strong HIPAA/compliance background.
+
+EXPERIENCE
+Senior Software Engineer, Meridian Health Analytics (Remote) — Oct 2021 to Present
+- Built the PHI-compliant data access layer used across 12 internal services
+
+Software Engineer, CareSync Technologies — Jan 2018 to Sep 2021
+- On-call engineer for patient scheduling platform, Ruby on Rails
+
+Software Engineer, Boston Medical Systems — Jun 2016 to Dec 2017
+
+EDUCATION
+B.S. Computer Science, Boston University, 2016
+
+REFERENCES
+CareSync engineering director, contact via company switchboard.

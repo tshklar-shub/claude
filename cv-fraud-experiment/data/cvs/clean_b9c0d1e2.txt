@@ -1,0 +1,21 @@
+Priya Raman
+priya.raman@gmail.com | +1 (512) 555-0173 | Austin, TX
+linkedin.com/in/priya-raman-eng | github.com/priyaraman
+
+SUMMARY
+Backend engineer, 5 years experience, Python/Java, payments infrastructure.
+
+EXPERIENCE
+Senior Software Engineer, Fenwick Pay (Remote) — May 2022 to Present
+- Own the ledger service handling ~$40M/month in transaction volume
+- Built idempotency layer that eliminated duplicate-charge incidents
+
+Software Engineer, Bexar Fintech — Sep 2019 to Apr 2022
+- Built KYC verification microservice, Java/Spring
+- Worked on-call rotation for payments platform
+
+EDUCATION
+B.S. Computer Engineering, UT Austin, 2019
+
+REFERENCES
+Former manager at Bexar Fintech available by phone, contact via LinkedIn to arrange.

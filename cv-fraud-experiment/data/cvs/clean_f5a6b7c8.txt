@@ -1,0 +1,21 @@
+Anika Patel
+anika.patel@coralanalytics.com | +1 (646) 555-0129 | New York, NY
+linkedin.com/in/anika-patel-data | github.com/apatel
+
+SUMMARY
+Data Engineer, 6 years, streaming systems, Kafka/Flink specialist.
+
+EXPERIENCE
+Senior Data Engineer, Coral Analytics (Remote) — Jun 2022 to Present
+- Built real-time anomaly-detection pipeline processing 2M events/min
+
+Data Engineer, Northstar Retail — Feb 2019 to May 2022
+- Migrated batch pricing pipeline to streaming architecture
+
+Data Analyst, Northstar Retail — Aug 2017 to Jan 2019
+
+EDUCATION
+B.S. Statistics, Columbia University, 2017
+
+REFERENCES
+Northstar Retail engineering manager, reachable via company main line.

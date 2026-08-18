@@ -1,0 +1,26 @@
+Maria Chen
+maria.chen@protonmail.com | +1 (415) 555-0142 | San Francisco, CA
+linkedin.com/in/mariachen-swe | github.com/mchen-dev
+
+SUMMARY
+Senior Software Engineer with 8 years of experience building distributed backend systems,
+specializing in Go and Kafka-based event pipelines.
+
+EXPERIENCE
+Staff Software Engineer, Nimbus Data (Remote) — Mar 2022 to Present
+- Led redesign of the event-ingestion pipeline, cutting p99 latency by 40%
+- Mentored 4 junior engineers; ran the backend on-call rotation
+
+Senior Software Engineer, Brightline Systems — Jul 2019 to Feb 2022
+- Built the billing reconciliation service (Go, Postgres, Kafka)
+- Owned migration from monolith to service-oriented architecture
+
+Software Engineer, Coral Analytics — Jun 2016 to Jun 2019
+- Built internal reporting APIs, Python/Django
+- Promoted from Associate Engineer after 18 months
+
+EDUCATION
+B.S. Computer Science, University of Washington, 2016
+
+REFERENCES
+Available on request; prior manager reachable via Brightline Systems main line.

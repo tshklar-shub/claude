@@ -1,0 +1,23 @@
+James Whitfield
+j.whitfield@outlook.com | +1 (206) 555-0110 | Seattle, WA
+linkedin.com/in/jwhitfield-tech | github.com/jwhitfield
+
+SUMMARY
+Senior Software Engineer with 10 years across ad tech and cloud infrastructure.
+
+EXPERIENCE
+Principal Engineer, Cascade Cloud (Remote) — Feb 2020 to Present
+- Lead architect for the multi-tenant provisioning system (Kubernetes, Terraform)
+- Speaker at CloudNativeCon 2023 on tenant isolation patterns
+
+Senior Software Engineer, AdVantage Media — Jun 2016 to Jan 2020
+- Rebuilt real-time bidding engine, reduced latency 35%
+
+Software Engineer II, AdVantage Media — Aug 2014 to May 2016
+Software Engineer I, AdVantage Media — Jul 2012 to Jul 2014
+
+EDUCATION
+B.S. Computer Science, University of Michigan, 2012
+
+REFERENCES
+Two former managers available, contactable through AdVantage Media HR or direct line.

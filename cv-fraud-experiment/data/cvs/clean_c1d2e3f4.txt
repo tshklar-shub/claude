@@ -1,0 +1,22 @@
+Tom Reyes
+tom.reyes@fenwickpay.com | +1 (720) 555-0187 | Denver, CO
+linkedin.com/in/tomreyes-swe | github.com/treyes
+
+SUMMARY
+Senior Software Engineer, 9 years, distributed systems and infra tooling.
+
+EXPERIENCE
+Staff Engineer, Fenwick Pay (Remote) — Apr 2021 to Present
+- Own internal deploy tooling used by 60+ engineers
+- Cut deploy failure rate from 8% to under 1%
+
+Senior Software Engineer, Highline Robotics — Mar 2017 to Mar 2021
+- Built fleet telemetry pipeline, Go/Kafka
+
+Software Engineer, Highline Robotics — Jan 2015 to Feb 2017
+
+EDUCATION
+B.S. Computer Engineering, Colorado School of Mines, 2014
+
+REFERENCES
+Former Highline Robotics VP Eng, contactable via company directory line.
