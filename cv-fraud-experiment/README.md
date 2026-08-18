@@ -59,6 +59,54 @@ fell below a threshold that would have caught them before credential/reference/o
 categories were added. If you keep expanding the taxonomy, consider per-category sub-scores
 instead of one blended global number.
 
+## Offline path (no API key, scales to hundreds of candidates)
+
+`generate_dataset.py`/`extract_cv.py`/`score_cv.py` need the Claude API. For tuning the
+detection logic itself at scale, there's a parallel offline path with no API dependency:
+
+- `local_generator.py` — template-based generator (name/company/institution pools +
+  deliberate flag injection), not LLM-written. Renders CVs from structured records so ground
+  truth is exact. Decorrelates weak signals (e.g. free email domain) from the fraud label so
+  the detector can't shortcut on them, and clones a fraction of fraud CVs verbatim (with a
+  swapped name) to simulate resume-mill/facilitator-ring template reuse.
+- `rule_based_extract.py` / `rule_based_score.py` — regex-based extraction and deterministic
+  flag-matching, tuned specifically to this generator's template format (does not generalize
+  to arbitrary real resumes the way the Claude-based path does).
+- `run_local_pipeline.py` — runs extraction + scoring + cross-candidate similarity over a
+  generated batch and prints a full evaluate.py-style report.
+
+```bash
+python3 local_generator.py --n 300 --fraud-rate 0.35 --seed 7 --out data/cvs_large
+python3 run_local_pipeline.py --dir data/cvs_large --db data/db/cv_fraud_large.sqlite3 --threshold 13
+```
+
+### Tuning results (300 candidates: 105 fraud / 195 clean)
+
+First run surfaced real generator bugs, not scorer bugs: `high_job_turnover` had 0% recall
+because the generator anchored turnover jobs 6-12 years in the past regardless of the flag
+(so "4+ jobs in the last 5 years" never matched anything); `thin_linkedin` had 50% recall
+from a coin-flip that rendered a normal LinkedIn profile even when the flag was injected;
+several other flags had partial misses because independently-sampled flags sometimes landed
+in combinations that silently overwrote each other's rendering (e.g. `sparse_recent_history`
+short-circuits company-building before an `employment_gaps_unexplained` gap can be inserted).
+Fixed by clustering conflicting flags so at most one per cluster is sampled onto a candidate,
+and anchoring turnover jobs recently. After the fix: **17 of 18 flag categories hit 100%
+recall**, one hit 96%.
+
+That still left a threshold-calibration problem: at the previous default (`threshold=25`,
+carried over from the earlier hand-built demo set), recall was only 0.324 despite near-perfect
+per-flag detection — the "score dilution" issue from the section below, worse at this scale
+since most fraud CVs carry only 2-4 of the 18 possible flags. Sweeping thresholds against the
+actual score distribution found **threshold=13: precision 1.000, recall 0.924, F1 0.960**,
+now the default in `run_local_pipeline.py`. The 8 remaining false negatives at that threshold
+all matched every injected flag correctly — they're genuinely weak cases (2 low-weight flags
+only, e.g. `thin_linkedin` + `high_job_turnover`), which arguably should score low.
+
+This tuning is specific to this generator's flag-weight distribution and the mostly-uniform
+CV template style it produces — it's a demonstration that the tuning loop (generate → score →
+diagnose false negatives/positives → fix generator or scorer bugs → re-sweep threshold) works,
+not a claim that 13 is the right cutoff for real-world CVs.
+
 ## Usage
 
 ```bash

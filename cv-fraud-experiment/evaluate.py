@@ -16,9 +16,10 @@ import db
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--threshold", type=float, default=30.0, help="fraud_score >= threshold => predicted fraud")
+    ap.add_argument("--db", type=str, default=None, help="path to a specific sqlite db (default: data/db/cv_fraud.sqlite3)")
     args = ap.parse_args()
 
-    conn = db.connect()
+    conn = db.connect(args.db)
     rows = db.fetch_all_results(conn)
     conn.close()
 

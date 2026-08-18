@@ -1,10 +1,11 @@
 """SQLite storage for the synthetic CV fraud-detection experiment."""
 
 import json
+import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "data" / "db" / "cv_fraud.sqlite3"
+DB_PATH = Path(os.environ.get("CV_FRAUD_DB", Path(__file__).parent / "data" / "db" / "cv_fraud.sqlite3"))
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS candidates (
@@ -32,9 +33,10 @@ CREATE TABLE IF NOT EXISTS scores (
 """
 
 
-def connect():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+def connect(db_path=None):
+    path = Path(db_path) if db_path else DB_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path)
     conn.executescript(SCHEMA)
     return conn
 
