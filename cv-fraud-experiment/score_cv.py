@@ -12,6 +12,7 @@ import uuid
 from pathlib import Path
 
 import db
+import similarity_check
 from claude_client import complete_json
 from extract_cv import extract_fields
 from redflags import RED_FLAGS, MAX_POSSIBLE_SCORE, flags_by_id
@@ -41,16 +42,27 @@ Return JSON: {{
 }}"""
 
 
-def score_candidate(extracted: dict, raw_text: str) -> dict:
+def score_candidate(extracted: dict, raw_text: str, candidate_id: str = None, conn=None) -> dict:
     judged = complete_json(SCORING_SYSTEM, build_scoring_prompt(extracted, raw_text), max_tokens=1000)
     by_id = flags_by_id()
     matched = [f for f in judged.get("matched_flags", []) if f in by_id]
+    reasoning = judged.get("reasoning", "")
+
+    sim_note = ""
+    if conn is not None and candidate_id is not None:
+        all_candidates = db.fetch_all_raw_texts(conn)
+        sim = similarity_check.check(candidate_id, raw_text, all_candidates)
+        if sim["flagged"]:
+            matched.append("template_reuse_across_candidates")
+            sim_note = (f" Near-duplicate text found (similarity={sim['similarity_ratio']:.2f}) "
+                        f"vs candidate {sim['most_similar_candidate']}.")
+
     raw_score = sum(by_id[f]["weight"] for f in matched)
     fraud_score = round(100 * raw_score / MAX_POSSIBLE_SCORE, 1)
     return {
         "matched_flags": matched,
         "fraud_score": fraud_score,
-        "reasoning": judged.get("reasoning", ""),
+        "reasoning": reasoning + sim_note,
     }
 
 
@@ -62,20 +74,21 @@ def main():
     path = Path(args.cv_path)
     raw_text = path.read_text()
 
+    conn = db.connect()
+    candidate_id = path.stem.split("_")[-1] if "_" in path.stem else str(uuid.uuid4())[:8]
+    true_label = "fraud" if path.stem.startswith("fraud_") else ("clean" if path.stem.startswith("clean_") else None)
+    db.insert_candidate(conn, candidate_id, path.name, raw_text, true_label=true_label)
+
     print(f"Extracting fields from {path.name}...")
     extracted = extract_fields(raw_text)
 
-    print("Scoring against documented red flags...")
-    result = score_candidate(extracted, raw_text)
+    print("Scoring against documented red flags + cross-candidate similarity...")
+    result = score_candidate(extracted, raw_text, candidate_id=candidate_id, conn=conn)
 
     print(f"\nFraud score: {result['fraud_score']}/100")
     print(f"Matched flags: {result['matched_flags']}")
     print(f"Reasoning: {result['reasoning']}")
 
-    conn = db.connect()
-    candidate_id = path.stem.split("_")[-1] if "_" in path.stem else str(uuid.uuid4())[:8]
-    true_label = "fraud" if path.stem.startswith("fraud_") else ("clean" if path.stem.startswith("clean_") else None)
-    db.insert_candidate(conn, candidate_id, path.name, raw_text, true_label=true_label)
     db.insert_extraction(conn, candidate_id, extracted)
     db.insert_score(conn, candidate_id, result["fraud_score"], result["matched_flags"], result["reasoning"])
     conn.close()

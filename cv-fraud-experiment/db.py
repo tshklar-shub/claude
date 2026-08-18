@@ -64,6 +64,11 @@ def insert_score(conn, candidate_id, fraud_score, matched_flags, reasoning):
     conn.commit()
 
 
+def fetch_all_raw_texts(conn):
+    cur = conn.execute("SELECT id, raw_text FROM candidates")
+    return cur.fetchall()
+
+
 def fetch_all_results(conn):
     cur = conn.execute(
         """

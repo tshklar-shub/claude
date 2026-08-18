@@ -13,6 +13,7 @@ extract_cv.py + score_cv.py API call pass would do.
 from pathlib import Path
 
 import db
+import similarity_check
 from redflags import flags_by_id, MAX_POSSIBLE_SCORE
 
 CV_DIR = Path(__file__).parent / "data" / "cvs"
@@ -103,19 +104,80 @@ CANDIDATES = [
                   "reference_personal_contact_only"],
          reasoning="gmail address; only one role on record, starting Aug 2024, no prior history at all; "
                     "summary uses 'Dan Osei' vs header 'Daniel Osei'; references explicitly personal-only."),
+
+    # --- fraud: broader categories (credential fraud, overemployment, shell company, farm template reuse) ---
+    dict(id="ccddeeff", file="fraud_ccddeeff.txt", true_label="fraud",
+         true_flags=["education_credential_implausible", "seniority_experience_mismatch", "single_unverifiable_reference"],
+         extracted={"full_name": "Ayesha Bell", "email_domain_type": "personal_free", "years_experience": 10,
+                     "education": [{"institution": "Weststate Online University", "degree": "B.S. Computer Science",
+                                     "grad_year": "2023"}]},
+         matched=["free_email_domain", "education_credential_implausible", "seniority_experience_mismatch",
+                  "single_unverifiable_reference"],
+         reasoning="gmail address; institution name and same-year 'Certificate in Advanced Software Architecture' "
+                    "read as diploma-mill-style credentialing; claims 'over a decade' of experience and a Staff "
+                    "title while graduating in 2023, only 1 listed role; only 'available on request' offered, "
+                    "no actual reference channel given at all."),
+    dict(id="gghhiijj", file="fraud_gghhiijj.txt", true_label="fraud",
+         true_flags=["overlapping_employment_dates", "single_unverifiable_reference"],
+         extracted={"full_name": "Carlos Medina", "email_domain_type": "personal_free", "years_experience": 6,
+                     "companies": [{"name": "Bluepeak Systems", "title": "Senior Software Engineer",
+                                     "start": "2023-01", "end": "present"},
+                                    {"name": "Fairwind Analytics", "title": "Senior Software Engineer",
+                                     "start": "2023-03", "end": "present"}]},
+         matched=["free_email_domain", "overlapping_employment_dates", "single_unverifiable_reference"],
+         reasoning="gmail address; two roles both explicitly labeled full-time with overlapping active date "
+                    "ranges (Jan 2023-present and Mar 2023-present) -- either fabricated or undisclosed "
+                    "concurrent employment; only one reference offered, reachable by personal cell only."),
+    dict(id="kkllmmnn", file="fraud_kkllmmnn.txt", true_label="fraud",
+         true_flags=["unverifiable_company_shell"],
+         extracted={"full_name": "Nina Foster", "email_domain_type": "personal_free", "years_experience": 7,
+                     "companies": [{"name": "Global Tech Solutions LLC", "title": "Senior Software Engineer",
+                                     "start": "2022-02", "end": "present"}]},
+         matched=["free_email_domain", "unverifiable_company_shell"],
+         reasoning="gmail address; current employer 'Global Tech Solutions LLC' has no location, industry, "
+                    "product, or any other identifying detail across the whole document -- generic enough to "
+                    "read as a possible shell entity."),
+    dict(id="oopprrqq", file="fraud_oopprrqq.txt", true_label="fraud",
+         true_flags=["template_reuse_across_candidates"],
+         extracted={"full_name": "Marcus Webb", "email_domain_type": "personal_free", "years_experience": 3,
+                     "jobs_last_5_years": 2, "linkedin_url": "present (m-webbtech)"},
+         matched=["free_email_domain", "overly_polished_language"],
+         reasoning="gmail address; generic buzzword summary. (Cross-candidate similarity check runs separately "
+                    "below -- this CV was deliberately built as a near-clone of candidate 11223344 to test it.)"),
 ]
 
 
 def main():
     conn = db.connect()
+
+    # Pass 1: insert every candidate's raw text + ground truth first, so the
+    # similarity check in pass 2 can compare each CV against the full set.
     for c in CANDIDATES:
         raw_text = (CV_DIR / c["file"]).read_text()
         db.insert_candidate(conn, c["id"], c["file"], raw_text, true_label=c["true_label"],
                              true_injected_flags=c["true_flags"])
+
+    all_texts = db.fetch_all_raw_texts(conn)
+
+    # Pass 2: real (not hand-asserted) cross-candidate similarity check, plus
+    # the independently-judged per-CV flags, combined into a final score.
+    for c in CANDIDATES:
+        raw_text = (CV_DIR / c["file"]).read_text()
+        matched = list(c["matched"])
+        reasoning = c["reasoning"]
+
+        sim = similarity_check.check(c["id"], raw_text, all_texts)
+        if sim["flagged"]:
+            matched.append("template_reuse_across_candidates")
+            reasoning += (f" [similarity_check] near-duplicate of candidate {sim['most_similar_candidate']} "
+                           f"(ratio={sim['similarity_ratio']:.2f}).")
+
         db.insert_extraction(conn, c["id"], c["extracted"])
-        s = score(c["matched"])
-        db.insert_score(conn, c["id"], s, c["matched"], c["reasoning"])
-        print(f"{c['id']:10s} {c['true_label']:6s} score={s:5.1f}  matched={c['matched']}")
+        s = score(matched)
+        db.insert_score(conn, c["id"], s, matched, reasoning)
+        print(f"{c['id']:10s} {c['true_label']:6s} score={s:5.1f}  sim={sim['similarity_ratio']:.2f} "
+              f"(vs {sim['most_similar_candidate']})  matched={matched}")
+
     conn.close()
     print(f"\nLoaded {len(CANDIDATES)} candidates into the DB.")
 
