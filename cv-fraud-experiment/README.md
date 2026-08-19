@@ -61,11 +61,19 @@ instead of one blended global number.
 
 ## Evaluating against a real CV repository
 
-See [`RUNBOOK_REAL_DATASET.md`](RUNBOOK_REAL_DATASET.md) for exact steps: ingesting real
-PDF/DOCX CVs (`ingest_cvs.py`), scoring them (`score_real_dataset.py`), and generating a
-ranked, human-reviewable report (`report.py`, CSV + self-contained HTML). Read the "before
-running anything" section first — real data has no ground truth to validate against, and
-disclosure/consent considerations apply that don't exist for the synthetic set.
+One command runs the whole thing — ingest (PDF/DOCX/TXT), score, and generate both reports:
+
+```bash
+export ANTHROPIC_API_KEY=your_key_here
+python3 scan_repository.py --src /path/to/cv/folder --label q1_batch --i-have-confirmed-disclosure
+```
+
+See [`RUNBOOK_REAL_DATASET.md`](RUNBOOK_REAL_DATASET.md) for the full walkthrough and
+[`CLAUDE.md`](CLAUDE.md) for the instructions a Claude session picks up automatically when
+working in this directory. Read the "before running anything" section first, every time —
+`--i-have-confirmed-disclosure` is required and exists specifically to force that
+conversation, not to be added reflexively. Real data has no ground truth to validate against,
+and disclosure/consent considerations apply that don't exist for the synthetic set.
 
 ## Offline path (no API key, scales to hundreds of candidates)
 
