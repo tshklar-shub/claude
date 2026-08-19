@@ -19,12 +19,38 @@ import db
 import similarity_check
 from local_llm_client import complete_json
 from extract_cv import extract_fields
-from redflags import RED_FLAGS, MAX_POSSIBLE_SCORE, flags_by_id
+from redflags import RED_FLAGS, RED_FLAG_IDS, MAX_POSSIBLE_SCORE, flags_by_id
+
+# Constrains matched_flags to {flag_id, evidence_quote} objects at the token level --
+# flag_id restricted to actual known ids, evidence_quote required (forces the model to
+# cite something rather than assert a bare conclusion).
+SCORING_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "matched_flags": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "flag_id": {"type": "string", "enum": RED_FLAG_IDS},
+                    "evidence_quote": {"type": "string"},
+                },
+                "required": ["flag_id", "evidence_quote"],
+            },
+        },
+        "reasoning": {"type": "string"},
+    },
+    "required": ["matched_flags", "reasoning"],
+}
 
 SCORING_SYSTEM = """You are a hiring-fraud screening assistant. Given a candidate's extracted CV
 fields and the raw CV text, judge which of the listed red-flag patterns are actually present.
 Be conservative: only flag a pattern if there is real textual evidence for it, not because it's
-merely possible. Output strict JSON only, no commentary or markdown fencing."""
+merely possible. For any date-based flag (overlapping_employment_dates, employment_gaps_unexplained,
+high_job_turnover, illogical_progression, seniority_experience_mismatch), you must quote the exact
+literal date strings you are comparing as your evidence_quote -- do not assert an overlap or gap
+without quoting both dates side by side. If you cannot quote specific supporting text, do not
+include that flag. Output strict JSON only, no commentary or markdown fencing."""
 
 
 def build_scoring_prompt(extracted: dict, raw_text: str) -> str:
@@ -40,9 +66,15 @@ RAW CV TEXT:
 {raw_text}
 ---
 
+For each red flag you believe is present, quote the exact text from the CV that supports it --
+this is mandatory, not optional. If a flag involves comparing two dates (overlap, gap, timeline),
+quote both date strings verbatim.
+
 Return JSON: {{
-  "matched_flags": [list of red flag ids that are actually present, evidence-based],
-  "reasoning": "2-4 sentences explaining the key evidence for each matched flag"
+  "matched_flags": [
+    {{"flag_id": "<one of the red flag ids above>", "evidence_quote": "<exact text from the CV supporting this, verbatim>"}}
+  ],
+  "reasoning": "2-4 sentences summarizing the overall assessment"
 }}"""
 
 
@@ -50,11 +82,40 @@ def score_candidate(extracted: dict, raw_text: str, candidate_id: str = None, co
     # Generous max_tokens: some local models emit reasoning/preamble before the
     # actual JSON despite instructions not to, and a tight budget can cut that off
     # before any usable output is produced. See local_llm_client.complete_json for
-    # the fallback JSON-extraction logic that also compensates for this.
-    judged = complete_json(SCORING_SYSTEM, build_scoring_prompt(extracted, raw_text), max_tokens=4000)
+    # the fallback JSON-extraction logic that also compensates for this. SCORING_SCHEMA
+    # constrains matched_flags to {flag_id, evidence_quote} objects so a claimed flag
+    # always carries its cited evidence, not just a bare id.
+    judged = complete_json(SCORING_SYSTEM, build_scoring_prompt(extracted, raw_text),
+                            max_tokens=4000, schema=SCORING_SCHEMA)
     by_id = flags_by_id()
-    matched = [f for f in judged.get("matched_flags", []) if f in by_id]
-    reasoning = judged.get("reasoning", "")
+
+    # Still defensive about shape even with a schema -- constrained decoding reduces but
+    # doesn't guarantee zero drift (seen in practice pre-schema: reasoning came back as a
+    # list of strings instead of a single string).
+    raw_matched = judged.get("matched_flags", [])
+    if not isinstance(raw_matched, list):
+        raw_matched = [raw_matched]
+    matched, evidence_by_flag = [], {}
+    for item in raw_matched:
+        if isinstance(item, dict):
+            flag_id, quote = item.get("flag_id"), item.get("evidence_quote", "")
+        elif isinstance(item, str):
+            flag_id, quote = item, ""
+        else:
+            continue
+        if isinstance(flag_id, str) and flag_id in by_id and flag_id not in matched:
+            matched.append(flag_id)
+            if quote:
+                evidence_by_flag[flag_id] = str(quote)
+
+    raw_reasoning = judged.get("reasoning", "")
+    if isinstance(raw_reasoning, list):
+        reasoning = " ".join(str(r) for r in raw_reasoning)
+    else:
+        reasoning = str(raw_reasoning) if raw_reasoning else ""
+    if evidence_by_flag:
+        quotes = "; ".join(f"{fid}: \"{q}\"" for fid, q in evidence_by_flag.items())
+        reasoning = f"{reasoning} [evidence: {quotes}]".strip()
 
     sim_note = ""
     if conn is not None and candidate_id is not None:

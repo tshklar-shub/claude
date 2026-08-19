@@ -35,10 +35,10 @@ pip install -r requirements.txt
 
 # install Ollama (macOS: brew install ollama, or download from ollama.com), then:
 ollama serve &                 # or use the Ollama desktop app instead
-ollama pull llama3.1:8b        # one-time download, a few GB
+ollama pull qwen3:8b   # one-time download, a few GB
 ```
 
-`llama3.1:8b` is the default (`local_llm_client.py`'s `CV_FRAUD_LOCAL_MODEL`). On a
+`qwen3:8b` is the default (`local_llm_client.py`'s `CV_FRAUD_LOCAL_MODEL`). On a
 resource-constrained machine, a smaller model works too but will be noticeably weaker at the
 nuanced judgment flags (`illogical_progression`, `overly_polished_language`) — more false
 negatives/positives than a larger model. Set `export CV_FRAUD_LOCAL_MODEL=<other-model>` after
@@ -98,12 +98,17 @@ Hand-off guidance:
   threshold for real data (the threshold=13 default from the synthetic benchmark is not
   proven to transfer). Report the score distribution and let the human set their own review
   cutoff based on how many candidates they have capacity to manually review.
-- One more caveat specific to the local-model path: smaller local models follow "output only
-  JSON" instructions less reliably than a cloud model, and are weaker at nuanced judgment
-  calls. `local_llm_client.py` has a fallback for stray prose around the JSON, but if a
-  candidate's extraction/score looks obviously wrong (empty fields that clearly have data in
-  the CV, or reasoning that doesn't match the evidence), that's worth flagging as a model
-  quality issue, not silently trusting the number.
+- One more caveat specific to the local-model path, verified by actually running it against
+  real API calls (not just theorized): a genuinely clean test CV came back with 5 matched
+  flags at `qwen3:8b`, all citing real quoted text (the schema-constrained evidence-quote
+  requirement works -- nothing was fabricated), but several of those quotes didn't actually
+  support the flag they were attached to (e.g. `thin_linkedin` citing the LinkedIn URL as
+  evidence it was *thin*, when its mere presence doesn't establish that; a 1-month gap
+  between two roles called "unexplained"; a reference line naming a company phone line
+  called "unverifiable"). The failure mode isn't hallucinated evidence anymore -- it's
+  misjudging evidence that's actually there. That's a real, current gap versus the cloud-API
+  path's behavior. Read the `reasoning`/evidence-quote text on every flagged candidate before
+  trusting it, especially on borderline scores.
 
 ## Advanced: running individual stages
 

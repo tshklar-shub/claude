@@ -39,9 +39,81 @@ Return a single JSON object with these fields:
 }
 """
 
+# JSON Schema mirroring SCHEMA_DESCRIPTION, passed to local_llm_client so Ollama
+# constrains generation to this exact shape (e.g. a field typed "string" cannot come
+# back as a list) instead of only relying on the prompt describing the shape.
+EXTRACTION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "full_name": {"type": "string"},
+        "email": {"type": ["string", "null"]},
+        "email_domain_type": {"type": ["string", "null"], "enum": ["personal_free", "company", "edu", "other", None]},
+        "phone": {"type": ["string", "null"]},
+        "location_claimed": {"type": ["string", "null"]},
+        "linkedin_url": {"type": ["string", "null"]},
+        "github_url": {"type": ["string", "null"]},
+        "years_experience": {"type": ["number", "null"]},
+        "companies": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "title": {"type": "string"},
+                    "start": {"type": "string"},
+                    "end": {"type": "string"},
+                },
+                "required": ["name", "title", "start", "end"],
+            },
+        },
+        "education": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "institution": {"type": "string"},
+                    "degree": {"type": "string"},
+                    "grad_year": {"type": "string"},
+                },
+                "required": ["institution", "degree", "grad_year"],
+            },
+        },
+        "employment_gaps": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "between": {"type": "array", "items": {"type": "string"}},
+                    "months": {"type": "number"},
+                },
+                "required": ["between", "months"],
+            },
+        },
+        "avg_tenure_months": {"type": ["number", "null"]},
+        "jobs_last_5_years": {"type": ["number", "null"]},
+        "references": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "contact_type": {"type": "string",
+                                      "enum": ["personal_cell", "personal_email", "company_line", "unspecified"]},
+                },
+                "required": ["name", "contact_type"],
+            },
+        },
+        "name_spelling_variants_found": {"type": "array", "items": {"type": "string"}},
+        "cv_length_estimate_pages": {"type": "number"},
+        "notable_language_style": {"type": "string"},
+    },
+    "required": ["full_name", "companies", "education", "references"],
+}
+
 
 def extract_fields(cv_text: str) -> dict:
     user = f"{SCHEMA_DESCRIPTION}\n\nCV TEXT:\n---\n{cv_text}\n---"
     # See local_llm_client.complete_json: generous headroom beyond just the JSON
-    # size, since local models can emit preamble before the actual output.
-    return complete_json(EXTRACTION_SYSTEM, user, max_tokens=4000)
+    # size, since local models can emit preamble before the actual output. Passing
+    # EXTRACTION_SCHEMA constrains the output shape at the token level.
+    return complete_json(EXTRACTION_SYSTEM, user, max_tokens=4000, schema=EXTRACTION_SCHEMA)

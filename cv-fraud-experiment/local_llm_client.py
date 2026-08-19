@@ -6,7 +6,14 @@ know which backend they're talking to -- only the transport differs.
 
 Requires Ollama installed and running locally (https://ollama.com), plus a
 model pulled ahead of time:
-    ollama pull llama3.1:8b        # or whatever CV_FRAUD_LOCAL_MODEL is set to
+    ollama pull qwen3:8b        # or whatever CV_FRAUD_LOCAL_MODEL is set to
+
+Model choice matters more than it might seem: an initial test run against llama3.1:8b
+(2024-vintage) produced factually wrong reasoning (claiming two employment date ranges
+overlapped when they didn't, independently, twice) and missed explicit quoted-in-the-CV
+evidence. qwen3:8b was chosen after checking current (2026) recommendations specifically
+for structured-output/reasoning reliability at this size class -- re-verify this is still
+a good default if picking it back up much later, models move fast.
 
 Nothing here makes any network call outside localhost. If that's ever not
 true, that's a bug -- the whole point of this module is that it isn't
@@ -19,9 +26,10 @@ import urllib.error
 import urllib.request
 
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-MODEL = os.environ.get("CV_FRAUD_LOCAL_MODEL", "llama3.1:8b")
+MODEL = os.environ.get("CV_FRAUD_LOCAL_MODEL", "qwen3:8b")
 
-REQUEST_TIMEOUT_SECONDS = 300  # local inference on CPU can be slow
+REQUEST_TIMEOUT_SECONDS = 600  # measured ~10 tok/s on M1/16GB for qwen3:8b -- a full
+                                # max_tokens=4000 budget can take ~7 minutes; 300s wasn't enough
 
 
 def _post(path: str, payload: dict) -> dict:
@@ -39,16 +47,23 @@ def _post(path: str, payload: dict) -> dict:
         ) from e
 
 
-def complete_text(system: str, user: str, max_tokens: int = 4000) -> str:
-    resp = _post("/api/chat", {
+def complete_text(system: str, user: str, max_tokens: int = 4000, format: dict = None) -> str:
+    payload = {
         "model": MODEL,
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
         "stream": False,
+        "think": False,  # hybrid-reasoning models (e.g. qwen3) default to extended
+                          # thinking, burning most of max_tokens on hidden reasoning
+                          # before ever reaching the schema-constrained answer -- not
+                          # needed here, we want the direct constrained JSON output.
         "options": {"num_predict": max_tokens},
-    })
+    }
+    if format is not None:
+        payload["format"] = format
+    resp = _post("/api/chat", payload)
     if "error" in resp:
         raise RuntimeError(
             f"Ollama returned an error: {resp['error']}. If it mentions the model, pull it "
@@ -57,18 +72,25 @@ def complete_text(system: str, user: str, max_tokens: int = 4000) -> str:
     return resp["message"]["content"]
 
 
-def complete_json(system: str, user: str, max_tokens: int = 4000) -> dict:
-    """Ask the local model for strict JSON and parse it, stripping any markdown fencing.
-    Local models follow "output only JSON" instructions less reliably than the cloud
-    model does -- this is intentionally more defensive about stripping stray prose."""
-    text = complete_text(system, user, max_tokens=max_tokens).strip()
+def complete_json(system: str, user: str, max_tokens: int = 4000, schema: dict = None) -> dict:
+    """Ask the local model for JSON and parse it.
+
+    Pass `schema` (a JSON Schema dict) when the caller knows the exact shape it needs --
+    Ollama then constrains generation at the token level so the model cannot produce a
+    field of the wrong type (e.g. a string field coming back as a list, which happened in
+    practice without this). Prefer this over hoping the prompt's shape description alone
+    is followed.
+
+    Without a schema, falls back to stripping markdown fencing and extracting the
+    outermost {...} block -- local models follow "output only JSON" instructions less
+    reliably than the cloud model does.
+    """
+    text = complete_text(system, user, max_tokens=max_tokens, format=schema).strip()
     if text.startswith("```"):
         text = text.split("```")[1]
         if text.startswith("json"):
             text = text[4:]
         text = text.strip()
-    # Some local models wrap JSON in explanatory text despite instructions -- fall back to
-    # extracting the outermost {...} block if a direct parse fails.
     try:
         return json.loads(text)
     except json.JSONDecodeError:

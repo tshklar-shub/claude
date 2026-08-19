@@ -22,7 +22,7 @@ Do this:
 
    ```bash
    ollama serve &                    # if not already running (or use the Ollama desktop app)
-   ollama pull llama3.1:8b           # one-time, if not already pulled
+   ollama pull qwen3:8b   # one-time, if not already pulled
    python3 scan_repository.py --src /path/to/the/cv/folder --label <short-name> \
        --i-have-confirmed-disclosure
    ```

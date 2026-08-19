@@ -73,7 +73,7 @@ One command runs the whole thing — ingest (PDF/DOCX/TXT), score, and generate 
 
 ```bash
 ollama serve &                 # if not already running
-ollama pull llama3.1:8b        # one-time
+ollama pull qwen3:8b   # one-time
 python3 scan_repository.py --src /path/to/cv/folder --label q1_batch --i-have-confirmed-disclosure
 ```
 
