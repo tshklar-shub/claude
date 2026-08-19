@@ -5,8 +5,13 @@ the results. This exists so a Claude session can run one command instead of
 correctly chaining ingest_cvs.py -> score_real_dataset.py -> report.py ->
 anomaly_report.py by hand.
 
+Runs entirely locally -- extraction/scoring uses a local model via Ollama
+(local_llm_client.py), not the Anthropic API, so real candidate CV text never
+leaves this machine. Requires Ollama installed and running, with a model
+pulled (see local_llm_client.py's docstring). No API key or billing needed.
+
 Usage:
-    export ANTHROPIC_API_KEY=...
+    ollama pull llama3.1:8b   # one-time, or whatever CV_FRAUD_LOCAL_MODEL is set to
     python3 scan_repository.py --src /path/to/cv/folder --label q1_batch --i-have-confirmed-disclosure
 
 Deliberately requires --i-have-confirmed-disclosure and does nothing without

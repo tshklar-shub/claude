@@ -1,8 +1,9 @@
 # CV Fraud-Signal Detection — Synthetic Benchmark
 
-A small pipeline for testing whether a Claude-based CV screening tool can pick up on
-documented candidate-fraud patterns — extraction, red-flag scoring, cross-candidate
-similarity, and evaluation against known ground truth.
+A small pipeline for testing whether an LLM-based CV screening tool can pick up on documented
+candidate-fraud patterns — extraction, red-flag scoring, cross-candidate similarity, and
+evaluation against known ground truth. Real-candidate extraction/scoring runs on a local model
+via Ollama, not the Anthropic API — see "Evaluating against a real CV repository" below.
 
 Covers six categories, grounded in different sources (see below): identity impersonation
 (DPRK IT-worker schemes), credential fraud (fabricated degrees/diploma mills), experience
@@ -34,13 +35,16 @@ fraud model; see "What this does and doesn't tell you" below.
 
 ## Pipeline
 
-1. `generate_dataset.py` — generates labeled synthetic CVs via the Claude API. Fraud-labeled
-   CVs have 2-4 red flags (from `redflags.py`) deliberately, subtly woven in; ground truth
-   (which flags, which label) is stored alongside each CV.
-2. `extract_cv.py` — Claude call that extracts structured fields (companies, tenure,
-   education, references, etc.) from raw CV text.
-3. `score_cv.py` / `score_all.py` — Claude call that judges, with evidence, which documented
-   red flags are actually present, then computes a weighted 0-100 score.
+1. `generate_dataset.py` — generates labeled synthetic CVs via the Claude API (the only
+   module in this repo that still calls it, and only for writing fictional CVs — no
+   privacy concern). Fraud-labeled CVs have 2-4 red flags (from `redflags.py`) deliberately,
+   subtly woven in; ground truth (which flags, which label) is stored alongside each CV.
+2. `extract_cv.py` — extracts structured fields (companies, tenure, education, references,
+   etc.) from raw CV text via a **local model (Ollama)**, not the cloud API — see
+   `local_llm_client.py`. This module handles real candidate data via `score_real_dataset.py`,
+   so it never sends CV text to a third party.
+3. `score_cv.py` / `score_all.py` — same local-model call, judges with evidence which
+   documented red flags are actually present, then computes a weighted 0-100 score.
 4. `similarity_check.py` — pairwise text-similarity pass against every other CV already in
    the dataset, flagging near-duplicates (resume-mill/facilitator-ring template reuse). This
    is the one signal that per-CV scoring structurally cannot see.
@@ -61,10 +65,15 @@ instead of one blended global number.
 
 ## Evaluating against a real CV repository
 
+Runs entirely **locally** — extraction/scoring uses a local model via
+[Ollama](https://ollama.com) (`local_llm_client.py`), not the Anthropic API, so real candidate
+CV text never leaves the machine it's running on. No API key, no billing account.
+
 One command runs the whole thing — ingest (PDF/DOCX/TXT), score, and generate both reports:
 
 ```bash
-export ANTHROPIC_API_KEY=your_key_here
+ollama serve &                 # if not already running
+ollama pull llama3.1:8b        # one-time
 python3 scan_repository.py --src /path/to/cv/folder --label q1_batch --i-have-confirmed-disclosure
 ```
 
@@ -75,10 +84,18 @@ working in this directory. Read the "before running anything" section first, eve
 conversation, not to be added reflexively. Real data has no ground truth to validate against,
 and disclosure/consent considerations apply that don't exist for the synthetic set.
 
-## Offline path (no API key, scales to hundreds of candidates)
+Note the tradeoff: a local model is weaker than the cloud API at nuanced judgment calls
+(e.g. `illogical_progression`, `overly_polished_language`) and less reliable about outputting
+clean JSON — `local_llm_client.py` has a fallback for stray prose around the JSON, but this
+path hasn't gone through the same tuning rounds documented below for the cloud-API path.
 
-`generate_dataset.py`/`extract_cv.py`/`score_cv.py` need the Claude API. For tuning the
-detection logic itself at scale, there's a parallel offline path with no API dependency:
+## Offline path (no LLM at all, scales to hundreds of candidates)
+
+`extract_cv.py`/`score_cv.py` need Ollama running locally (no API key, see above).
+`generate_dataset.py` additionally needs the cloud Claude API if you want it (optional --
+only used for writing fictional synthetic CVs). For tuning the detection logic itself at
+scale without depending on *any* LLM, local or cloud, there's a fully separate, purely
+rule-based offline path:
 
 - `local_generator.py` — template-based generator (name/company/institution pools +
   deliberate flag injection), not LLM-written. Renders CVs from structured records so ground
@@ -87,7 +104,7 @@ detection logic itself at scale, there's a parallel offline path with no API dep
   swapped name) to simulate resume-mill/facilitator-ring template reuse.
 - `rule_based_extract.py` / `rule_based_score.py` — regex-based extraction and deterministic
   flag-matching, tuned specifically to this generator's template format (does not generalize
-  to arbitrary real resumes the way the Claude-based path does).
+  to arbitrary real resumes the way the LLM-based path, local or cloud, does).
 - `run_local_pipeline.py` — runs extraction + scoring + cross-candidate similarity over a
   generated batch and prints a full evaluate.py-style report.
 - `anomaly_report.py` — the evaluation-review view: every candidate x flag pair as its own

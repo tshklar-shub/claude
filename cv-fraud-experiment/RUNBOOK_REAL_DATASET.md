@@ -25,11 +25,24 @@ not just the first time a given person uses it.
 
 ## 1. Set up (one-time)
 
+This runs entirely locally — extraction/scoring uses a local model via
+[Ollama](https://ollama.com), not the Anthropic API, so real candidate CV text never leaves
+this machine. No API key, no billing account.
+
 ```bash
 cd cv-fraud-experiment
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your_key_here
+
+# install Ollama (macOS: brew install ollama, or download from ollama.com), then:
+ollama serve &                 # or use the Ollama desktop app instead
+ollama pull llama3.1:8b        # one-time download, a few GB
 ```
+
+`llama3.1:8b` is the default (`local_llm_client.py`'s `CV_FRAUD_LOCAL_MODEL`). On a
+resource-constrained machine, a smaller model works too but will be noticeably weaker at the
+nuanced judgment flags (`illogical_progression`, `overly_polished_language`) — more false
+negatives/positives than a larger model. Set `export CV_FRAUD_LOCAL_MODEL=<other-model>` after
+pulling it to switch.
 
 ## 2. Run the whole pipeline with one command
 
@@ -47,8 +60,9 @@ python3 scan_repository.py --src /path/to/the/real/cv/folder --label <short-name
   the questions in step 0 in chat and gotten a real answer.
 - `<short-name>` labels this batch (e.g. `q1_applicants`) and namespaces the output under
   `data/runs/<short-name>/`, so repeat scans don't overwrite each other.
-- Add `--dry-run` on a large folder to verify file discovery and DB wiring with zero API calls
-  before spending budget on the real run, then re-run without it.
+- Add `--dry-run` on a large folder to verify file discovery and DB wiring with zero model
+  calls before running the real scan (which, being local, has no billing cost — but local
+  inference is slower than a cloud API, so this still saves time on a bad folder path).
 
 Read the ingest step's output carefully (printed as step 1/4). Anything skipped will say why
 — the most common cause is a scanned/image-only PDF with no extractable text layer, which
@@ -84,6 +98,12 @@ Hand-off guidance:
   threshold for real data (the threshold=13 default from the synthetic benchmark is not
   proven to transfer). Report the score distribution and let the human set their own review
   cutoff based on how many candidates they have capacity to manually review.
+- One more caveat specific to the local-model path: smaller local models follow "output only
+  JSON" instructions less reliably than a cloud model, and are weaker at nuanced judgment
+  calls. `local_llm_client.py` has a fallback for stray prose around the JSON, but if a
+  candidate's extraction/score looks obviously wrong (empty fields that clearly have data in
+  the CV, or reasoning that doesn't match the evidence), that's worth flagging as a model
+  quality issue, not silently trusting the number.
 
 ## Advanced: running individual stages
 

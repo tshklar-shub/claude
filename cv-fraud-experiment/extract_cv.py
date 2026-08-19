@@ -1,6 +1,14 @@
-"""Extract structured fields from raw CV text via the Claude API."""
+"""
+Extract structured fields from raw CV text.
 
-from claude_client import complete_json
+Uses local_llm_client (Ollama), not claude_client -- this module handles real
+candidate CVs (via score_real_dataset.py), and that data must not leave the
+machine it's running on. Do not switch this back to claude_client without
+re-checking why local_llm_client was chosen here specifically -- see
+CLAUDE.md and RUNBOOK_REAL_DATASET.md.
+"""
+
+from local_llm_client import complete_json
 
 EXTRACTION_SYSTEM = """You extract structured fields from a candidate's CV/resume text for a hiring
 pipeline. Be literal and evidence-based: only report what is actually present in the text, and use
@@ -34,6 +42,6 @@ Return a single JSON object with these fields:
 
 def extract_fields(cv_text: str) -> dict:
     user = f"{SCHEMA_DESCRIPTION}\n\nCV TEXT:\n---\n{cv_text}\n---"
-    # See score_cv.py comment: this model's internal reasoning eats into max_tokens
-    # before producing output, so this needs headroom beyond just the JSON size.
+    # See local_llm_client.complete_json: generous headroom beyond just the JSON
+    # size, since local models can emit preamble before the actual output.
     return complete_json(EXTRACTION_SYSTEM, user, max_tokens=4000)

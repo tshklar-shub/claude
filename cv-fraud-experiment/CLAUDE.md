@@ -17,20 +17,27 @@ Do this:
    this conversation to happen, not to be routed around.
 
 2. **Run the whole pipeline with one command**, not by chaining the individual scripts by
-   hand (that's how arguments get mismatched or a step gets skipped):
+   hand (that's how arguments get mismatched or a step gets skipped). This runs entirely
+   locally via Ollama — no API key, no candidate data leaves the machine:
 
    ```bash
-   export ANTHROPIC_API_KEY=...          # ask the user for this if not already set
+   ollama serve &                    # if not already running (or use the Ollama desktop app)
+   ollama pull llama3.1:8b           # one-time, if not already pulled
    python3 scan_repository.py --src /path/to/the/cv/folder --label <short-name> \
        --i-have-confirmed-disclosure
    ```
 
+   If `ollama` isn't installed at all, tell the user to install it from ollama.com first —
+   don't fall back to `claude_client.py`/the Anthropic API for this path. `extract_cv.py` and
+   `score_cv.py` are wired to `local_llm_client.py` specifically so real candidate data can't
+   accidentally go to a third-party API; don't change that wiring to work around a missing
+   Ollama install.
+
    Pick `<short-name>` to describe this batch (e.g. `q1_applicants`) — it namespaces the
    output under `data/runs/<label>/` so repeat scans don't clobber each other.
 
-   For a large folder, or to sanity-check before spending API budget, add `--dry-run` first
-   (verifies file discovery and DB wiring, no API calls) and confirm it looks right before
-   re-running without it.
+   For a large folder, or just to sanity-check first, add `--dry-run` (verifies file discovery
+   and DB wiring, no model calls) and confirm it looks right before re-running without it.
 
 3. **Read `ingest_cvs.py`'s output carefully** (`scan_repository.py` prints it as step 1/4).
    Anything skipped will say why — most commonly a scanned/image-only PDF with no text layer.
@@ -60,4 +67,8 @@ tuning rounds went and what's already been fixed — don't re-discover the same 
 - Don't reuse the rule-based path (`rule_based_extract.py`/`rule_based_score.py`) on real
   CVs — it's regex-tuned to `local_generator.py`'s synthetic template and will not parse
   arbitrary real resume formats. Real data always goes through `scan_repository.py`
-  (Claude-based extraction).
+  (local-model extraction via Ollama).
+- Don't route real-CV extraction/scoring through `claude_client.py`/the Anthropic API. That's
+  fine for `generate_dataset.py` (fictional synthetic CVs, no privacy concern) but not for
+  anything touching real candidate data — that's the whole reason
+  `extract_cv.py`/`score_cv.py` use `local_llm_client.py` instead.

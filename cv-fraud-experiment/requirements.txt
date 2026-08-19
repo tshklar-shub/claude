@@ -1,3 +1,9 @@
-anthropic>=0.40.0
 pypdf>=4.0.0
 python-docx>=1.1.0
+
+# anthropic is only needed for the optional cloud-based synthetic-data path
+# (generate_dataset.py / score_all.py) -- NOT for scanning real CVs.
+# scan_repository.py / score_real_dataset.py use local_llm_client.py (Ollama)
+# instead, so real candidate data never leaves the machine. Uncomment if you
+# want the cloud-based synthetic generation path too:
+# anthropic>=0.40.0

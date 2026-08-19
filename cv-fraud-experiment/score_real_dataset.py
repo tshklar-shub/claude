@@ -1,16 +1,19 @@
 """
-Batch-score a folder of normalized (plain-text) real CVs using the Claude-based
-extraction + red-flag scoring + cross-candidate similarity pipeline. Unlike
+Batch-score a folder of normalized (plain-text) real CVs using local-model
+extraction + red-flag scoring + cross-candidate similarity. Unlike
 score_all.py (which expects the labeled synthetic naming convention), this
 takes an arbitrary folder and stores every candidate with true_label=None
 (unknown -- there's no ground truth for real data).
 
+Uses local_llm_client (Ollama) via extract_cv.py/score_cv.py, not the
+Anthropic API -- real candidate CV text must not leave this machine. Requires
+Ollama installed and running with a model pulled; no API key needed.
+
 Usage:
-    export ANTHROPIC_API_KEY=...
     python3 ingest_cvs.py --src /path/to/real/cvs --out data/real_cvs_txt
     python3 score_real_dataset.py --dir data/real_cvs_txt --db data/db/cv_fraud_real.sqlite3
 
-Add --dry-run to verify file discovery / DB wiring without calling the API.
+Add --dry-run to verify file discovery / DB wiring without calling the local model.
 """
 
 import argparse
@@ -30,7 +33,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", type=str, required=True, help="folder of normalized .txt CVs (see ingest_cvs.py)")
     ap.add_argument("--db", type=str, default="data/db/cv_fraud_real.sqlite3")
-    ap.add_argument("--dry-run", action="store_true", help="skip Claude API calls, just verify wiring")
+    ap.add_argument("--dry-run", action="store_true", help="skip local-model calls, just verify wiring")
     args = ap.parse_args()
 
     cv_dir = Path(__file__).parent / args.dir
