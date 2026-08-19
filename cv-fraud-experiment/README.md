@@ -82,10 +82,16 @@ detection logic itself at scale, there's a parallel offline path with no API dep
   to arbitrary real resumes the way the Claude-based path does).
 - `run_local_pipeline.py` — runs extraction + scoring + cross-candidate similarity over a
   generated batch and prints a full evaluate.py-style report.
+- `anomaly_report.py` — the evaluation-review view: every candidate x flag pair as its own
+  row, pre-marked confirmed/unconfirmed against ground truth, plus a per-flag-type breakdown
+  (fire count, confirm rate) for spotting which specific heuristics need work. This is what
+  actually caught the labeling bug described below — a raw precision/recall number wouldn't
+  have surfaced it.
 
 ```bash
 python3 local_generator.py --n 300 --fraud-rate 0.35 --seed 7 --out data/cvs_large
 python3 run_local_pipeline.py --dir data/cvs_large --db data/db/cv_fraud_large.sqlite3 --threshold 13
+python3 anomaly_report.py --db data/db/cv_fraud_large.sqlite3 --out data/reports/anomaly_review_large
 ```
 
 ### Tuning results (300 candidates: 105 fraud / 195 clean)
@@ -109,6 +115,45 @@ actual score distribution found **threshold=13: precision 1.000, recall 0.924, F
 now the default in `run_local_pipeline.py`. The 8 remaining false negatives at that threshold
 all matched every injected flag correctly — they're genuinely weak cases (2 low-weight flags
 only, e.g. `thin_linkedin` + `high_job_turnover`), which arguably should score low.
+
+### Anomaly-review pass found two more real bugs that precision/recall alone missed
+
+Running `anomaly_report.py` against this dataset (which pre-marks every matched flag
+confirmed/unconfirmed against ground truth) surfaced two issues invisible in the aggregate
+precision/recall numbers above, because their effect was symmetric or small enough not to
+move candidate-level accuracy:
+
+1. **Clone-pair ground truth was one-sided.** When the generator clones a fraud CV's template
+   for a facilitator-ring simulation, only the clone's ground truth said
+   `template_reuse_across_candidates` — the parent's didn't, even though a near-duplicate pair
+   is symmetric and the detector correctly flagged both sides. Fixed by adding the flag to the
+   parent's ground truth too. Separately, the clone was only swapping the name on line 1,
+   leaving the email/LinkedIn/GitHub referencing the *parent's* old identity — unrealistic, and
+   it coincidentally tripped `name_spelling_inconsistent` for the wrong reason. Fixed by
+   regenerating the whole contact block on clone, keeping only the body (summary/experience/
+   education/references — the actual "reused template") verbatim.
+2. **`similarity_check.py`'s `SequenceMatcher.ratio()` is not symmetric** — verified empirically
+   (one real clone pair scored 0.94 one comparison direction, 0.88 the other), meaning a fixed
+   threshold could flag only one side of a real duplicate pair depending on comparison order.
+   Fixed by taking the max of both directions.
+
+Chasing the `template_reuse_across_candidates` threshold further at 300-candidate scale
+surfaced a harder, structural limitation: **true clone-pair ratios and coincidental
+unrelated-pair ratios genuinely overlap** on this dataset (true clones as low as 0.858 by
+character-level similarity; a coincidental unrelated pair as high as 0.907, verified by
+exhaustive pairwise check). Expanding the bullet-phrase vocabulary (15 → 240 combinations)
+helped but didn't eliminate the overlap. No single `difflib`-ratio threshold separates them
+perfectly — 0.88 is a pragmatic midpoint, not a clean separator. The methodologically correct
+fix is semantic (embedding) similarity rather than literal character-sequence matching, which
+is out of scope for this API-free offline path. Real CVs plausibly have enough natural lexical
+diversity that this specific overlap is a synthetic-corpus artifact — but that's an assumption,
+not something verified against real data.
+
+Final state after all fixes (300 candidates, same seed): **precision 1.000, recall 0.810,
+F1 0.895**, 15 of 16 flag categories at 100% per-flag recall (one at 95%). Recall moved around
+across these fix iterations mostly because each generator fix reshuffled the shared random
+sequence downstream, not because later fixes made things worse — the flag-level and
+false-positive numbers are the more meaningful signal here than the exact recall figure.
 
 This tuning is specific to this generator's flag-weight distribution and the mostly-uniform
 CV template style it produces — it's a demonstration that the tuning loop (generate → score →

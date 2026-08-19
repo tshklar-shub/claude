@@ -68,6 +68,23 @@ This writes two files:
 - `data/reports/real_run/report.html` — the same data as a self-contained, color-coded page —
   open it directly in any browser (`open data/reports/real_run/report.html` on macOS)
 
+`report.py` is for triage (which candidates need a closer look). For the actual review —
+going through every individual anomaly with its evidence — generate the anomaly review
+report instead:
+
+```bash
+python3 anomaly_report.py --db data/db/cv_fraud_real.sqlite3 --out data/reports/anomaly_review
+```
+
+This writes one row per candidate-x-flag pair (a candidate with 3 matched flags gets 3 rows),
+each with the flag's plain-language description and the model's reasoning, plus a blank
+`reviewer_verdict`/`reviewer_notes` column in the CSV for recording the human review. Real
+data has no ground truth, so nothing is pre-marked correct/incorrect — every row needs actual
+judgment. (Run the same script against a synthetic run, e.g.
+`data/db/cv_fraud_large.sqlite3`, and it *will* pre-mark each flag confirmed/unconfirmed
+against known ground truth plus a per-flag-type breakdown table — that's the view for
+evaluating the detector itself, not for reviewing real candidates.)
+
 ## 5. How to show the results to the person who asked for this
 
 - **Default**: hand them `report.html` directly, or `report.csv` if they want to pivot/filter

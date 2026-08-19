@@ -12,15 +12,30 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 
-# Two resumes for the same *role* will share boilerplate (section headers,
-# generic phrasing) even when written by unrelated people -- calibrated
-# empirically against this project's own synthetic set. A naive 0.55 cutoff
-# produced a false positive between two unrelated but short, sparsely-worded
-# CVs (ratio 0.63-0.64, driven by shared headers/boilerplate rather than real
-# duplication), while the deliberately cloned pair in this dataset scored
-# 0.88-0.94. 0.75 sits with margin above the false-positive case and below
-# the real clone.
-SIMILARITY_THRESHOLD = 0.75
+# KNOWN LIMITATION, not just a tuning knob: at 300 candidates drawn from a
+# bounded-vocabulary synthetic generator, true clone-pair ratios and
+# coincidental unrelated-pair ratios genuinely overlap (true clones as low as
+# 0.858; a coincidental unrelated pair as high as 0.907 -- verified by
+# exhaustive pairwise check, not sampling). No single difflib-ratio threshold
+# separates them perfectly on this dataset. This is a real ceiling of
+# character-level text similarity on constrained vocabulary, not a bug to
+# threshold away -- the methodologically correct fix is semantic (embedding)
+# similarity, out of scope for this API-free offline path. 0.88 is a
+# pragmatic midpoint that minimizes total error, not a clean separator.
+# Real CVs have far more natural lexical diversity than this synthetic
+# corpus, so this overlap is plausibly a synthetic-data artifact -- but that
+# is an assumption, not something verified against real data.
+SIMILARITY_THRESHOLD = 0.88
+
+
+def _symmetric_ratio(a: str, b: str) -> float:
+    """SequenceMatcher.ratio() is NOT guaranteed symmetric -- it can differ by several
+    points depending on which string is passed as a vs b (verified empirically: one
+    real clone pair in this project's own test data scored 0.94 one direction and 0.88
+    the other). Left uncorrected, a fixed threshold could catch only one side of a real
+    duplicate pair depending on comparison order. Taking the max of both directions
+    makes the flag decision consistent regardless of which candidate is "self"."""
+    return max(SequenceMatcher(None, a, b).ratio(), SequenceMatcher(None, b, a).ratio())
 
 
 def most_similar(raw_text: str, others: list[tuple[str, str]]) -> tuple[str | None, float]:
@@ -28,7 +43,7 @@ def most_similar(raw_text: str, others: list[tuple[str, str]]) -> tuple[str | No
     Returns (most_similar_candidate_id, ratio) or (None, 0.0) if `others` is empty."""
     best_id, best_ratio = None, 0.0
     for other_id, other_text in others:
-        ratio = SequenceMatcher(None, raw_text, other_text).ratio()
+        ratio = _symmetric_ratio(raw_text, other_text)
         if ratio > best_ratio:
             best_id, best_ratio = other_id, ratio
     return best_id, best_ratio

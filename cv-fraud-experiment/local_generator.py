@@ -43,23 +43,38 @@ FOREIGN_COUNTRY_CODES = ["+82 10", "+86 138", "+7 916", "+234 803", "+254 722"]
 TITLE_LADDER = ["Junior Developer", "Software Engineer", "Senior Software Engineer", "Staff Software Engineer",
                 "Principal Software Engineer"]
 
-BULLET_POOL = [
-    "Built and maintained backend services handling core business logic",
-    "Led migration of legacy systems to a modern microservices architecture",
-    "Reduced infrastructure costs by optimizing resource utilization",
-    "Mentored junior engineers and ran the team's on-call rotation",
-    "Designed the data pipeline powering internal analytics dashboards",
-    "Owned the CI/CD pipeline used across multiple engineering teams",
-    "Improved API response times through caching and query optimization",
-    "Collaborated with product and design on feature specification and delivery",
-    "Wrote and maintained integration tests for critical payment flows",
-    "Debugged and resolved production incidents as part of on-call duties",
-    "Refactored a monolithic service into independently deployable components",
-    "Implemented monitoring and alerting for key backend services",
-    "Partnered with cross-functional teams to scope and deliver quarterly roadmap items",
-    "Automated manual deployment processes, cutting release time significantly",
-    "Reviewed pull requests and maintained coding standards across the team",
+BULLET_SUBJECTS = ["the checkout service", "the internal admin tool", "the notification pipeline",
+                    "the user-facing API layer", "the batch reporting system", "the search indexing service",
+                    "the fraud-review dashboard", "the billing reconciliation job", "the auth service",
+                    "the event-streaming layer", "the customer data platform", "the inventory sync job"]
+BULLET_TEMPLATES = [
+    "Built and maintained {subj}, handling core business logic",
+    "Led migration of {subj} to a modern microservices architecture",
+    "Reduced infrastructure costs for {subj} by optimizing resource utilization",
+    "Mentored junior engineers working on {subj} and ran the on-call rotation",
+    "Designed {subj}, which now powers internal analytics dashboards",
+    "Owned the CI/CD pipeline for {subj} used across multiple engineering teams",
+    "Improved response times for {subj} through caching and query optimization",
+    "Collaborated with product and design on the specification for {subj}",
+    "Wrote and maintained integration tests covering {subj}",
+    "Debugged and resolved production incidents affecting {subj}",
+    "Refactored {subj} from a monolith into independently deployable components",
+    "Implemented monitoring and alerting for {subj}",
+    "Partnered with cross-functional teams to scope and deliver {subj}",
+    "Automated the manual deployment process for {subj}, cutting release time significantly",
+    "Reviewed pull requests and set coding standards for the team owning {subj}",
+    "Scaled {subj} to handle a 3x increase in traffic without a rewrite",
+    "Cut the p99 latency of {subj} in half through targeted profiling",
+    "Migrated {subj} off a deprecated internal framework with zero downtime",
+    "Built the on-call runbook and alerting thresholds for {subj}",
+    "Drove the technical design review process for {subj}",
 ]
+# Cartesian product of subjects x templates gives a much larger, less collision-prone
+# pool than a flat list -- important because with a small flat pool, unrelated
+# candidates started coincidentally converging on near-identical bodies at scale
+# (see README: a coincidental pair scored 0.911, above the true-clone floor of 0.868,
+# with the old 15-bullet pool).
+BULLET_POOL = [t.format(subj=s) for t in BULLET_TEMPLATES for s in BULLET_SUBJECTS]
 
 POLISHED_PHRASES = [
     "Highly skilled and results-driven engineer with proven ability to deliver robust, scalable solutions.",
@@ -122,8 +137,8 @@ def build_companies(rng, flags, base_year):
     companies = []
     if "sparse_recent_history" in flags:
         start = f"{base_year - rng.choice([0, 1])}-{rng.randint(1,9):02d}"
-        companies = [{"name": rng.choice(REAL_COMPANIES), "title": "Senior Software Engineer",
-                      "start": start, "end": "present"}]
+        name = rng.choice(VAGUE_SHELL_NAMES) if "unverifiable_company_shell" in flags else rng.choice(REAL_COMPANIES)
+        companies = [{"name": name, "title": "Senior Software Engineer", "start": start, "end": "present"}]
         return companies
 
     n = rng.randint(2, 3)
@@ -181,18 +196,39 @@ def build_companies(rng, flags, base_year):
 def build_candidate(rng, idx, label, base_year=2026, clone_pool=None, clone_rate=0.0):
     cid = rand_id(rng)
 
-    # Occasionally clone an existing fraud candidate's text (facilitator-ring template reuse)
+    # Occasionally clone an existing fraud candidate's text (facilitator-ring template reuse):
+    # same body (summary/experience/education/references -- the actual "reused template"),
+    # fresh surface identity (name/email/phone/linkedin/github), matching what a real
+    # facilitator ring plausibly submits -- a coherent fake identity wrapped around
+    # boilerplate content, not a broken CV with mismatched name and contact info.
     if label == "fraud" and clone_pool and rng.random() < clone_rate:
         parent = rng.choice(clone_pool)
+        parent_lines = parent.text.split("\n")
+        body_start = parent_lines.index("") if "" in parent_lines else len(parent_lines)
+        parent_header = "\n".join(parent_lines[:body_start])
+        body = "\n".join(parent_lines[body_start:])
+        had_linkedin = "linkedin.com/in/" in parent_header
+        had_github = "github.com/" in parent_header
+
         first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
-        new_text = parent.text.replace(parent.id, cid)
-        # swap the name/email/phone superficially, keep structure identical
-        lines = new_text.split("\n")
-        if lines:
-            lines[0] = f"{first} {last}"
-        new_text = "\n".join(lines)
+        email = f"{first.lower()}.{last.lower()}{rng.randint(1,99)}@{rng.choice(FREE_EMAIL_DOMAINS)}"
+        phone = f"+1 ({rng.choice(US_AREA_CODES)}) 555-{rng.randint(1000,9999)}"
+        location = rng.choice(US_LOCATIONS)
+        header = [f"{first} {last}", f"{email} | {phone} | {location}"]
+        if had_linkedin:
+            header.append(f"linkedin.com/in/{first.lower()}-{last.lower()}")
+        if had_github:
+            header.append(f"github.com/{first.lower()}{last.lower()}")
+
+        new_text = "\n".join(header) + "\n" + body
         cand = Candidate(id=cid, label="fraud", injected_flags=["template_reuse_across_candidates"],
                           clone_of=parent.id, text=new_text)
+        # A near-duplicate pair is symmetric -- the parent is just as
+        # legitimately part of the template-reuse cluster as the clone.
+        # Without this, a correct detection on the parent side reads as a
+        # false positive against ground truth, when it's actually a labeling gap.
+        if "template_reuse_across_candidates" not in parent.injected_flags:
+            parent.injected_flags.append("template_reuse_across_candidates")
         return cand
 
     first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
