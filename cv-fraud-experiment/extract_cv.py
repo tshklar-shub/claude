@@ -34,4 +34,6 @@ Return a single JSON object with these fields:
 
 def extract_fields(cv_text: str) -> dict:
     user = f"{SCHEMA_DESCRIPTION}\n\nCV TEXT:\n---\n{cv_text}\n---"
-    return complete_json(EXTRACTION_SYSTEM, user, max_tokens=2000)
+    # See score_cv.py comment: this model's internal reasoning eats into max_tokens
+    # before producing output, so this needs headroom beyond just the JSON size.
+    return complete_json(EXTRACTION_SYSTEM, user, max_tokens=4000)

@@ -43,7 +43,10 @@ Return JSON: {{
 
 
 def score_candidate(extracted: dict, raw_text: str, candidate_id: str = None, conn=None) -> dict:
-    judged = complete_json(SCORING_SYSTEM, build_scoring_prompt(extracted, raw_text), max_tokens=1000)
+    # 4000, not 1000: this model's internal reasoning consumes tokens from the same
+    # max_tokens budget before it produces the final answer, so a tight budget can
+    # exhaust itself mid-thinking and return zero actual output (seen in practice).
+    judged = complete_json(SCORING_SYSTEM, build_scoring_prompt(extracted, raw_text), max_tokens=4000)
     by_id = flags_by_id()
     matched = [f for f in judged.get("matched_flags", []) if f in by_id]
     reasoning = judged.get("reasoning", "")

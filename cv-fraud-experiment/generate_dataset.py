@@ -46,13 +46,13 @@ only, formatted like a real CV (no markdown headers with #, just a normal resume
 
 
 def gen_clean_cv() -> str:
-    return complete_text(CLEAN_SYSTEM, f"Generate one CV for the role: {ROLE}.", max_tokens=1200, temperature=1.0)
+    return complete_text(CLEAN_SYSTEM, f"Generate one CV for the role: {ROLE}.", max_tokens=1200)
 
 
 def gen_fraud_cv(flags: list) -> str:
     descs = "\n".join(f"- [{f['id']}] {f['description']}" for f in flags)
     system = FRAUD_SYSTEM_TEMPLATE.format(flag_descriptions=descs)
-    return complete_text(system, f"Generate one CV for the role: {ROLE}.", max_tokens=1200, temperature=1.0)
+    return complete_text(system, f"Generate one CV for the role: {ROLE}.", max_tokens=1200)
 
 
 def main():
