@@ -35,14 +35,27 @@ pip install -r requirements.txt
 
 # install Ollama (macOS: brew install ollama, or download from ollama.com), then:
 ollama serve &                 # or use the Ollama desktop app instead
-ollama pull qwen3:8b   # one-time download, a few GB
+ollama pull qwen3:4b   # one-time download, a few GB
 ```
 
-`qwen3:8b` is the default (`local_llm_client.py`'s `CV_FRAUD_LOCAL_MODEL`). On a
-resource-constrained machine, a smaller model works too but will be noticeably weaker at the
-nuanced judgment flags (`illogical_progression`, `overly_polished_language`) — more false
-negatives/positives than a larger model. Set `export CV_FRAUD_LOCAL_MODEL=<other-model>` after
-pulling it to switch.
+`qwen3:4b` is the default. Verified (not assumed) to match `qwen3:8b`'s accuracy on the
+ground-truth batch (16/16 either way) and produce identical structured extraction on a real
+resume, while running ~1.6x faster — worth it specifically because `hybrid_score.py` moved
+scoring out of the model's job, leaving only the more mechanical extraction step. Set
+`export CV_FRAUD_LOCAL_MODEL=<other-model>` to use a different one.
+
+**Speed**: real resumes average ~700 words (vs ~100 for this project's synthetic test set) --
+budget roughly 1-3 min/candidate depending on hardware, not the much faster numbers a
+synthetic-CV benchmark would suggest. Two more levers, both measured on an M1/16GB and worth
+re-testing on whatever machine actually runs this:
+- `OLLAMA_NUM_PARALLEL=2` (set before `ollama serve`) gave a real ~1.86x throughput gain with
+  `qwen3:8b` here, but was roughly neutral with `qwen3:4b` on the same hardware -- the smaller
+  model already saturates this GPU, so a second concurrent stream just slows both requests down
+  rather than adding throughput. A machine with more GPU headroom may see real gains stacking
+  both; don't assume either way without testing.
+- The cloud API would be faster still, but reintroduces exactly the privacy tradeoff this
+  local-only setup exists to avoid -- not a default to reach for without an explicit decision
+  to accept that tradeoff.
 
 ## 2. Run the whole pipeline with one command
 

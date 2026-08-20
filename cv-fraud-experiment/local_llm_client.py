@@ -6,14 +6,27 @@ know which backend they're talking to -- only the transport differs.
 
 Requires Ollama installed and running locally (https://ollama.com), plus a
 model pulled ahead of time:
-    ollama pull qwen3:8b        # or whatever CV_FRAUD_LOCAL_MODEL is set to
+    ollama pull qwen3:4b        # or whatever CV_FRAUD_LOCAL_MODEL is set to
 
 Model choice matters more than it might seem: an initial test run against llama3.1:8b
 (2024-vintage) produced factually wrong reasoning (claiming two employment date ranges
 overlapped when they didn't, independently, twice) and missed explicit quoted-in-the-CV
-evidence. qwen3:8b was chosen after checking current (2026) recommendations specifically
-for structured-output/reasoning reliability at this size class -- re-verify this is still
-a good default if picking it back up much later, models move fast.
+evidence. qwen3:8b fixed that. Once hybrid_score.py moved scoring out of the LLM's job
+entirely (extraction only now, see hybrid_score.py's docstring), the remaining job is more
+mechanical, and qwen3:4b was verified to match qwen3:8b's accuracy exactly on the same
+ground-truth batch (16/16 correct either way) and produce identical structured extraction
+on a real resume (companies/dates/titles/education all matched), while running ~1.6x faster
+(measured on M1/16GB: 40.3s vs 63.4s on a real ~700-word resume). Switched the default to
+qwen3:4b on that basis. Re-verify this holds if picking this back up much later -- models
+move fast, and this was one real resume's worth of comparison, not an exhaustive one.
+
+Parallel requests (OLLAMA_NUM_PARALLEL=2+ when starting `ollama serve`) gave a real ~1.86x
+throughput gain with qwen3:8b on this M1 (GPU had slack), but was roughly neutral-to-negative
+combined with qwen3:4b on the same hardware (the smaller model already saturates this GPU,
+so a second concurrent stream just slows both down rather than adding throughput). This is
+very likely hardware-dependent -- a machine with a more capable GPU (e.g. M3 Pro/Max) may see
+real gains stacking both. Worth testing empirically on the machine actually running this,
+not assumed from this M1's numbers.
 
 Nothing here makes any network call outside localhost. If that's ever not
 true, that's a bug -- the whole point of this module is that it isn't
@@ -26,7 +39,7 @@ import urllib.error
 import urllib.request
 
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-MODEL = os.environ.get("CV_FRAUD_LOCAL_MODEL", "qwen3:8b")
+MODEL = os.environ.get("CV_FRAUD_LOCAL_MODEL", "qwen3:4b")
 
 REQUEST_TIMEOUT_SECONDS = 600  # measured ~10 tok/s on M1/16GB for qwen3:8b -- a full
                                 # max_tokens=4000 budget can take ~7 minutes; 300s wasn't enough
