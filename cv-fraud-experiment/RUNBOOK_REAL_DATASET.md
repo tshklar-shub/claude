@@ -46,16 +46,27 @@ scoring out of the model's job, leaving only the more mechanical extraction step
 
 **Speed**: real resumes average ~700 words (vs ~100 for this project's synthetic test set) --
 budget roughly 1-3 min/candidate depending on hardware, not the much faster numbers a
-synthetic-CV benchmark would suggest. Two more levers, both measured on an M1/16GB and worth
-re-testing on whatever machine actually runs this:
-- `OLLAMA_NUM_PARALLEL=2` (set before `ollama serve`) gave a real ~1.86x throughput gain with
-  `qwen3:8b` here, but was roughly neutral with `qwen3:4b` on the same hardware -- the smaller
-  model already saturates this GPU, so a second concurrent stream just slows both requests down
-  rather than adding throughput. A machine with more GPU headroom may see real gains stacking
-  both; don't assume either way without testing.
-- The cloud API would be faster still, but reintroduces exactly the privacy tradeoff this
-  local-only setup exists to avoid -- not a default to reach for without an explicit decision
-  to accept that tradeoff.
+synthetic-CV benchmark would suggest. For a large batch (hundreds of real CVs), find the right
+`OLLAMA_NUM_PARALLEL` setting for the machine actually running this:
+
+```bash
+python3 tune_parallelism.py --model qwen3:4b --levels 1,2,3,4,6,8
+```
+
+This restarts Ollama at each level, fires that many concurrent extraction requests against a
+realistic-length CV, and measures actual throughput -- then recommends the level with the best
+verified result. Don't guess a parallelism setting from a one-off timing test: an early ad-hoc
+test on this project's own dev machine suggested a real gain from parallelism, but a rigorous
+sweep on the same machine got wildly inconsistent numbers between runs, traced to a mix of a
+real bug (`ollama serve`'s child process surviving a naive kill and competing with the next run
+for GPU memory -- fixed in this script) and ordinary background load (browser, other apps) on a
+machine that isn't dedicated to this. Run the tuning script with as little else competing for
+the GPU as possible, and treat its output as specific to that machine and that model -- re-run
+if either changes.
+
+The cloud API would be faster still, but reintroduces exactly the privacy tradeoff this
+local-only setup exists to avoid -- not a default to reach for without an explicit decision to
+accept that tradeoff.
 
 ## 2. Run the whole pipeline with one command
 
