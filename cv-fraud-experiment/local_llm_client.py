@@ -20,15 +20,14 @@ on a real resume (companies/dates/titles/education all matched), while running ~
 qwen3:4b on that basis. Re-verify this holds if picking this back up much later -- models
 move fast, and this was one real resume's worth of comparison, not an exhaustive one.
 
-Parallel requests (OLLAMA_NUM_PARALLEL=2+ when starting `ollama serve`): an early ad-hoc test
-suggested a real throughput gain with qwen3:8b on this M1, but a later, more careful sweep
-(see tune_parallelism.py) run on the same machine got wildly inconsistent numbers between
-back-to-back runs -- traced to a mix of a real bug (ollama serve's child llama-server process
-surviving a naive pkill and competing with the next run for GPU memory) and this being a
-regular-use laptop with substantial other load (browser, other apps) at benchmark time, not a
-dedicated machine. Don't trust either number as settled. Use tune_parallelism.py to get a real
-answer on the machine that will actually run this, ideally with nothing else competing for
-the GPU at the time -- don't assume a parallelism setting from any single ad-hoc timing.
+Parallel requests (OLLAMA_NUM_PARALLEL): use tune_parallelism.py to find the right setting
+for the machine actually running this -- don't assume one. On this M1/16GB with qwen3:4b, the
+clean, reproducible answer (after fixing two real bugs along the way -- see
+tune_parallelism.py's history) is NUM_PARALLEL=1: level=1 measured 14.8s/candidate, level=2
+measured 30.4s effective/candidate -- concurrency made it worse, not better, because this
+combination of model size and GPU is already at capacity with one request in flight. A
+stronger GPU (e.g. Dor's 2024 MacBook Pro) may get a genuinely different answer; that's the
+point of the tuning script existing rather than hardcoding a number here.
 
 Nothing here makes any network call outside localhost. If that's ever not
 true, that's a bug -- the whole point of this module is that it isn't

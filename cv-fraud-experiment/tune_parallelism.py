@@ -117,6 +117,18 @@ REQUEST_TIMEOUT = 420  # generous -- under contention a single request can legit
                         # take several minutes; better to wait than to record a bogus failure
 
 
+# Matches extract_cv.py's real usage: without this, `think: false` alone does not
+# reliably stop the model from writing out full step-by-step reasoning prose instead of
+# JSON (verified directly: a diagnostic call without `format` returned done_reason="length"
+# after burning the entire token budget on "We are given... We need to extract... Steps:
+# 1..." without ever producing an answer). The `format` schema forces grammar-constrained
+# decoding regardless of the model's own inclination, which is what actually suppresses it.
+SAMPLE_SCHEMA = {"type": "object", "properties": {
+    "full_name": {"type": "string"},
+    "companies": {"type": "array", "items": {"type": "string"}},
+}, "required": ["full_name", "companies"]}
+
+
 def one_extraction(model: str, results: list, idx: int, timeout: int = REQUEST_TIMEOUT):
     payload = {
         "model": model,
@@ -128,6 +140,7 @@ def one_extraction(model: str, results: list, idx: int, timeout: int = REQUEST_T
         ],
         "stream": False,
         "think": False,
+        "format": SAMPLE_SCHEMA,
         "options": {"num_predict": 500},
     }
     data = json.dumps(payload).encode()

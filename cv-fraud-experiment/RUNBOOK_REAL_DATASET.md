@@ -55,14 +55,17 @@ python3 tune_parallelism.py --model qwen3:4b --levels 1,2,3,4,6,8
 
 This restarts Ollama at each level, fires that many concurrent extraction requests against a
 realistic-length CV, and measures actual throughput -- then recommends the level with the best
-verified result. Don't guess a parallelism setting from a one-off timing test: an early ad-hoc
-test on this project's own dev machine suggested a real gain from parallelism, but a rigorous
-sweep on the same machine got wildly inconsistent numbers between runs, traced to a mix of a
-real bug (`ollama serve`'s child process surviving a naive kill and competing with the next run
-for GPU memory -- fixed in this script) and ordinary background load (browser, other apps) on a
-machine that isn't dedicated to this. Run the tuning script with as little else competing for
-the GPU as possible, and treat its output as specific to that machine and that model -- re-run
-if either changes.
+verified result. Don't guess a parallelism setting from a one-off timing test or assume this
+project's own dev-machine number transfers: two real bugs had to be found and fixed before the
+sweep produced a trustworthy answer (`ollama serve`'s child process surviving a naive kill and
+competing with the next run for GPU memory; the benchmark request missing the `format` JSON
+schema that production code always sends, which let the model ramble through its full token
+budget as reasoning prose instead of stopping cleanly -- an 8s request became a 220s+ one).
+After both fixes, the clean result on that dev machine (M1/16GB, qwen3:4b) was
+`OLLAMA_NUM_PARALLEL=1` -- concurrency made things worse there, not better, because that
+model/GPU combination is already at capacity with one request in flight. Don't assume that
+result transfers either -- a stronger GPU may get a genuinely different answer, which is the
+whole reason this is a script to run rather than a number to copy.
 
 The cloud API would be faster still, but reintroduces exactly the privacy tradeoff this
 local-only setup exists to avoid -- not a default to reach for without an explicit decision to
