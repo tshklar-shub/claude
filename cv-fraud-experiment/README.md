@@ -89,6 +89,17 @@ Note the tradeoff: a local model is weaker than the cloud API at nuanced judgmen
 clean JSON — `local_llm_client.py` has a fallback for stray prose around the JSON, but this
 path hasn't gone through the same tuning rounds documented below for the cloud-API path.
 
+**Scoring defaults to `hybrid_score.py`**, not a second LLM call: one LLM call for extraction
+(needs the flexibility), then deterministic Python for red-flag matching (most flags, once
+fields are extracted, are pure logic -- date-range math, string lookups -- not judgment).
+Measured on a real end-to-end test (see
+[`PRE_HANDOFF_TEST_REPORT.md`](PRE_HANDOFF_TEST_REPORT.md)): hybrid scoring got 16/16 correct
+on a mixed-format ground-truth batch (precision 1.00, recall 1.00) in half the model calls of
+the old two-call approach, which only got 10/16 right on identical extracted data. That report
+also covers a real-world false-positive check against 15 real (non-synthetic) resumes from a
+public dataset, and two real bugs it caught that a synthetic-only test structurally couldn't
+have. Pass `--llm-scoring` to `score_real_dataset.py` for the old two-call path instead.
+
 ## Offline path (no LLM at all, scales to hundreds of candidates)
 
 `extract_cv.py`/`score_cv.py` need Ollama running locally (no API key, see above).

@@ -107,7 +107,14 @@ EXTRACTION_SCHEMA = {
         "cv_length_estimate_pages": {"type": "number"},
         "notable_language_style": {"type": "string"},
     },
-    "required": ["full_name", "companies", "education", "references"],
+    # Every scalar field is required (as string-or-null), not just the obviously
+    # present ones -- verified in practice that when a field is merely optional in
+    # the schema, the model sometimes omits it from the output entirely (e.g.
+    # dropping linkedin_url/github_url/email/phone even when clearly present in
+    # the CV text) rather than either finding it or explicitly returning null.
+    # Requiring the key forces an explicit answer either way.
+    "required": ["full_name", "email", "email_domain_type", "phone", "location_claimed",
+                 "linkedin_url", "github_url", "companies", "education", "references"],
 }
 
 
