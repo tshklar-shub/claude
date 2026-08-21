@@ -79,8 +79,8 @@ MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
 
 
 def _parse_date(s) -> tuple:
-    """Best-effort parse of free-text dates ('Jul 2019', 'March 2022', '2019',
-    '2019-07', 'Present'/'Current'/'Now') into (year, month). Returns None if
+    """Best-effort parse of free-text dates ('Jul 2019', 'March 2022', '07/2006',
+    '2019', '2019-07', 'Present'/'Current'/'Now') into (year, month). Returns None if
     nothing recognizable is found -- callers must handle that, not assume success."""
     if not s or not isinstance(s, str):
         return None
@@ -90,6 +90,9 @@ def _parse_date(s) -> tuple:
     m = re.match(r"^(\d{4})-(\d{1,2})$", s)
     if m:
         return (int(m.group(1)), int(m.group(2)))
+    m = re.match(r"^(\d{1,2})/(\d{4})$", s)  # MM/YYYY -- common on real resumes
+    if m and 1 <= int(m.group(1)) <= 12:
+        return (int(m.group(2)), int(m.group(1)))
     m = re.match(r"^([a-z]{3,9})\.?\s+(\d{4})$", s)
     if m:
         mon = MONTHS.get(m.group(1)[:3])
@@ -99,6 +102,27 @@ def _parse_date(s) -> tuple:
     if m:
         return (int(m.group(1)), 1)  # year only -- assume January
     return None
+
+
+def _is_imprecise_date(s) -> bool:
+    """True if _parse_date would resolve this to a bare year via its January-default
+    fallback rather than an actual month. Matters because that default is a real bias:
+    two roles listing only years ('2022' -> '2023') look like a fabricated 12-month gap
+    even when the true gap could be anywhere from 0 to 23 months. Verified on a real CV:
+    'employment_gaps_unexplained' fired on exactly this pattern with no real basis."""
+    if not s or not isinstance(s, str):
+        return True
+    s = s.strip().lower()
+    if s in ("present", "current", "now", "ongoing", "today"):
+        return False
+    if re.match(r"^\d{4}-\d{1,2}$", s):
+        return False
+    m = re.match(r"^(\d{1,2})/\d{4}$", s)
+    if m and 1 <= int(m.group(1)) <= 12:
+        return False
+    if re.match(r"^[a-z]{3,9}\.?\s+\d{4}$", s):
+        return False
+    return True
 
 
 def _months_between(a, b):
@@ -160,12 +184,19 @@ def score_fields(extracted: dict, raw_text: str) -> tuple:
     if extracted.get("email_domain_type") == "personal_free":
         flag("free_email_domain", f"email: {extracted.get('email')}")
 
-    # phone_format_suspicious: phone doesn't start +1 while location reads as US
+    # phone_format_suspicious: phone carries an EXPLICIT non-US country code while
+    # location reads as US. Verified false positive on a real CV: a plain domestic
+    # number written without any "+1" prefix ("669-252-5046", extremely common --
+    # most Americans don't prefix their own country code) was flagged just for
+    # lacking "+1", which was never real evidence of anything. Only an explicit "+"
+    # followed by a non-"1" country code is actually suspicious; no "+" prefix at all
+    # is normal, not evidence of a foreign number.
     phone = (extracted.get("phone") or "").strip()
     location = (extracted.get("location_claimed") or "").strip()
     us_signals = ["united states", "usa", "u.s.", ", ca", ", ny", ", tx", ", wa", ", il", ", ma", ", co", ", fl", ", ga"]
     looks_us = any(sig in location.lower() for sig in us_signals) or re.search(r",\s*[A-Z]{2}$", location)
-    if phone and looks_us and not phone.startswith("+1"):
+    country_code = re.match(r"^\+(\d{1,3})", phone)
+    if country_code and looks_us and country_code.group(1) != "1":
         flag("phone_format_suspicious", f"phone '{phone}' vs location '{location}'")
 
     # thin_linkedin / thin_github: presence check, gated on a detected tech-role
@@ -199,13 +230,19 @@ def score_fields(extracted: dict, raw_text: str) -> tuple:
     if hit_kw:
         flag("overly_polished_language", f"matched boilerplate phrase: '{hit_kw}'")
 
-    # employment_gaps_unexplained: >=6mo gap between consecutive dated roles
+    # employment_gaps_unexplained: >=6mo gap between consecutive dated roles, with a
+    # higher bar (18mo) when either boundary date is year-only -- see _is_imprecise_date.
     ordered = sorted([s for s in spans if s["start"] and s["end"]], key=lambda s: s["start"])
     for i in range(len(ordered) - 1):
         gap = _months_between(ordered[i]["end"], ordered[i + 1]["start"])
-        if gap is not None and gap >= 6:
+        if gap is None:
+            continue
+        imprecise = _is_imprecise_date(ordered[i]["end_raw"]) or _is_imprecise_date(ordered[i + 1]["start_raw"])
+        threshold = 18 if imprecise else 6
+        if gap >= threshold:
+            note = " (year-only dates -- true gap could be smaller)" if imprecise else ""
             flag("employment_gaps_unexplained",
-                 f"{gap}mo gap between '{ordered[i]['end_raw']}' and '{ordered[i+1]['start_raw']}'")
+                 f"{gap}mo gap between '{ordered[i]['end_raw']}' and '{ordered[i+1]['start_raw']}'{note}")
             break
 
     # high_job_turnover: >=4 roles starting within the last 5 years
