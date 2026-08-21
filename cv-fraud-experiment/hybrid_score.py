@@ -138,6 +138,18 @@ POLISHED_KEYWORDS = ["highly skilled", "results-driven", "results driven", "pass
                       "consistently exceeding expectations", "measurable business impact",
                       "proven ability to deliver", "dynamic professional", "go-getter", "synergy"]
 
+# Deliberately NOT flagging mainstream free providers (gmail, yahoo, outlook, hotmail,
+# icloud, protonmail, etc.) -- verified on real data that mainstream free email fires on
+# almost every real resume tested (including every Kaggle sample and the user's own,
+# known-clean CVs), making it pure noise, not signal. Only genuinely rare, disposable/
+# burner services are worth flagging -- using one on a real job application is an actual
+# unusual choice, unlike using gmail.
+DISPOSABLE_EMAIL_DOMAINS = {
+    "mailinator.com", "guerrillamail.com", "10minutemail.com", "tempmail.com",
+    "throwawaymail.com", "yopmail.com", "trashmail.com", "getnada.com", "fakeinbox.com",
+    "sharklasers.com", "temp-mail.org", "dispostable.com", "maildrop.cc", "mintemail.com",
+}
+
 BY_ID = flags_by_id()
 
 
@@ -180,9 +192,14 @@ def score_fields(extracted: dict, raw_text: str) -> tuple:
     if len(variants) >= 2:
         flag("name_spelling_inconsistent", f"variants found during extraction: {variants}")
 
-    # free_email_domain
-    if extracted.get("email_domain_type") == "personal_free":
-        flag("free_email_domain", f"email: {extracted.get('email')}")
+    # free_email_domain -- only disposable/burner services, not mainstream free
+    # providers (gmail/yahoo/outlook/etc). See DISPOSABLE_EMAIL_DOMAINS comment: using
+    # a mainstream free provider is normal today and isn't evidence of anything; using
+    # a disposable one on a real job application is a genuinely rare, meaningful choice.
+    email = (extracted.get("email") or "").lower()
+    email_domain = email.split("@")[-1] if "@" in email else ""
+    if email_domain in DISPOSABLE_EMAIL_DOMAINS:
+        flag("free_email_domain", f"email uses a disposable/temporary email service: {extracted.get('email')}")
 
     # phone_format_suspicious: phone carries an EXPLICIT non-US country code while
     # location reads as US. Verified false positive on a real CV: a plain domestic

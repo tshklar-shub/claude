@@ -49,7 +49,7 @@ RED_FLAGS = [
     },
     {
         "id": "free_email_domain",
-        "description": "Personal free-email provider (gmail/yahoo/outlook) used instead of any professional or institutional domain",
+        "description": "Disposable/temporary email service used (e.g. mailinator, guerrillamail, 10minutemail) -- NOT mainstream free providers like gmail/yahoo/outlook, which are normal today and not evidence of anything on their own",
         "weight": 2,
         "category": "identity_impersonation",
         "fields": ["email_domain_type"],
