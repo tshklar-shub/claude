@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tomer & Dor — Home + Investment Planner</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e6e9f0;--accent:#315efb;--good:#16794b;--warn:#a15c00;--soft:#eef3ff}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 18px 60px}.hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:20px}.hero h1{font-size:clamp(28px,4vw,46px);line-height:1.05;margin:0 0 8px}.hero p{margin:0;color:var(--muted);max-width:760px}.pill{background:var(--soft);color:#2449c8;border:1px solid #dbe4ff;border-radius:999px;padding:8px 12px;font-weight:700;font-size:13px;white-space:nowrap}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.span4{grid-column:span 4}.span5{grid-column:span 5}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:8px}.big{font-size:32px;font-weight:800;line-height:1.1}.sub{color:var(--muted);font-size:13px;margin-top:5px}.metric-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.metric{padding:12px;border-radius:12px;background:#fafbfe;border:1px solid var(--line)}.metric b{display:block;font-size:20px}.metric span{font-size:12px;color:var(--muted)}
+    label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}.control{margin-bottom:14px} input[type=range]{width:100%} select,input[type=number]{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}.inline{display:grid;grid-template-columns:1fr 1fr;gap:12px}.check{display:flex;align-items:center;gap:8px;font-size:14px}.check input{width:18px;height:18px}.note{font-size:13px;color:var(--muted);line-height:1.45}
+    table{width:100%;border-collapse:collapse;font-size:14px} th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line)} th:first-child,td:first-child{text-align:left} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.best{font-weight:800;color:var(--good)}
+    .barbox{margin-top:12px}.barrow{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center;margin:10px 0}.track{height:12px;background:#edf0f5;border-radius:999px;overflow:hidden}.fill{height:100%;background:var(--accent);border-radius:999px}.fill.alt{background:#7b8cff}.barlabel{font-size:13px}.barval{text-align:right;font-weight:800;font-size:13px}
+    .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.option{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.option h3{margin:0 0 6px;font-size:17px}.option p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}.option strong{display:block;margin-top:10px}.tag{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:5px 8px;margin-bottom:8px;background:#f0f2f7}.tag.good{background:#e9f7ef;color:var(--good)}.tag.warn{background:#fff4e5;color:var(--warn)}
+    .footer{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.5}.callout{background:#172033;color:#fff;border:none}.callout .kicker,.callout .sub{color:#c7cfdf}.callout .big{font-size:27px}.callout p{color:#e3e7ef;line-height:1.5;margin:10px 0 0}
+    @media(max-width:850px){.span4,.span5,.span7,.span8{grid-column:span 12}.hero{align-items:flex-start;flex-direction:column}.options{grid-template-columns:1fr}.inline{grid-template-columns:1fr}.barrow{grid-template-columns:95px 1fr 75px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div><h1>Home + Investment Planner</h1><p>A simple decision dashboard for Tomer & Dor: preserve flexibility for a Brooklyn purchase in 1–2 years while deciding what to do with Detroit, the UK deal, Wealthfront, and the Alex-managed Monogram portfolio.</p></div>
+    <div class="pill">Planning horizon: 1–2 years</div>
+  </div>
+
+  <div class="grid">
+    <section class="card span4"><div class="kicker">Net assets today</div><div class="big">$1.18M</div><div class="sub">Detroit $214K · Monogram $378K · Wealthfront $340K · SoFi $144K · Chase $99K</div></section>
+    <section class="card span4"><div class="kicker">Known future obligations</div><div class="big">$290K</div><div class="sub">Surrogacy $250K total · TLV taxes $40K</div></section>
+    <section class="card span4"><div class="kicker">Deployable capital</div><div class="big">$885K</div><div class="sub">About $671K without selling or otherwise monetizing Detroit</div></section>
+
+    <section class="card span5">
+      <div class="kicker">1 · Choose a future Brooklyn home</div>
+      <div class="control"><label for="price">Purchase price: <span id="priceLabel">$1.8M</span></label><input id="price" type="range" min="1500000" max="2000000" step="100000" value="1800000"></div>
+      <div class="control"><label for="down">Down payment</label><select id="down"><option value="20">20%</option><option value="30" selected>30%</option><option value="40">40%</option></select></div>
+      <div class="inline">
+        <div class="control"><label for="ptax">Monthly property tax</label><input id="ptax" type="number" value="900" step="50" min="0"></div>
+        <div class="control"><label for="hoa">Monthly common charges</label><input id="hoa" type="number" value="800" step="50" min="0"></div>
+      </div>
+      <div class="inline">
+        <div class="control"><label for="insurance">Monthly insurance</label><input id="insurance" type="number" value="75" step="25" min="0"></div>
+        <div class="control"><label for="rate">Mortgage rate</label><input id="rate" type="number" value="6.71" min="1" max="15" step="0.05"></div>
+      </div>
+      <div class="metric-row">
+        <div class="metric"><b id="cashClose">$605K</b><span>cash needed incl. closing costs</span></div>
+        <div class="metric"><b id="monthly">$9,914</b><span>estimated all-in / month</span></div>
+      </div>
+    </section>
+
+    <section class="card span7">
+      <div class="kicker">2 · Home tradeoff by down payment</div>
+      <table><thead><tr><th>Down</th><th>Cash needed</th><th>Monthly</th><th>Cash left from $671K</th></tr></thead><tbody id="homeRows"></tbody></table>
+      <div class="barbox" id="bars"></div>
+      <p class="note">Cash-to-close values use the planning estimates developed for $1.5M–$2.0M Brooklyn condos and interpolate the same closing-cost logic. Figures shown in K are rounded up to the nearest thousand.</p>
+    </section>
+
+    <section class="card span7">
+      <div class="kicker">3 · Decide what to do with investment capital</div>
+      <div class="inline">
+        <label class="check"><input id="uk" type="checkbox"> Invest $115K in the UK deal</label>
+        <label class="check"><input id="detroitAdd" type="checkbox"> Allocate $115K to another Detroit house</label>
+      </div>
+      <div class="control" style="margin-top:14px"><label for="wfToAlex">Move Wealthfront S&P 500 money to Alex / Monogram</label><input id="wfToAlex" type="range" min="0" max="340000" step="10000" value="0"><div class="sub"><span id="wfLabel">$0</span> of $340K earmarked for long-term managed investing</div></div>
+      <div class="metric-row">
+        <div class="metric"><b id="homeReserve">$556K</b><span>estimated liquid / near-liquid pool after selected investments</span></div>
+        <div class="metric"><b id="incomeOffset">$1,335/mo</b><span>estimated recurring after-tax investment income</span></div>
+      </div>
+      <p class="note" id="incomeNote"></p>
+    </section>
+
+    <section class="card span5 callout">
+      <div class="kicker">Current default recommendation</div>
+      <div class="big">Keep the home option open.</div>
+      <p>Because the apartment purchase may be 1–2 years away, avoid locking too much of the future down payment into illiquid investments. Keep a defined home reserve, leave the existing Detroit homes working, and only invest capital clearly above that reserve.</p>
+      <p><strong>Default:</strong> skip the UK deal for now; use Wealthfront as temporary market exposure, then decide how much should move to Alex versus remain available for the home. Consider additional Detroit only if the home reserve stays intact.</p>
+    </section>
+
+    <section class="card span12">
+      <div class="kicker">4 · Three clear paths</div>
+      <div class="options">
+        <div class="option"><span class="tag good">Maximum flexibility</span><h3>Home reserve first</h3><p>Keep enough liquid / low-volatility capital to cover roughly 30% down + closing costs on the likely home. Skip the UK deal. Keep Detroit. Move only true long-term surplus to Alex.</p><strong>Best if buying within ~12–18 months.</strong></div>
+        <div class="option"><span class="tag">Balanced</span><h3>Reserve + one Detroit expansion</h3><p>Protect the home reserve, then use roughly $100–115K of surplus to add another Detroit property if a deal resembles the economics of the current homes.</p><strong>Best if the home is more likely ~18–24 months away.</strong></div>
+        <div class="option"><span class="tag warn">More committed</span><h3>Long-term investing tilt</h3><p>Move more of Wealthfront to Alex and/or take the UK deal. Potentially higher long-term compounding, but less flexibility if the right Brooklyn apartment appears sooner.</p><strong>Best only if the home timeline becomes less certain.</strong></div>
+      </div>
+    </section>
+
+    <section class="card span12">
+      <div class="kicker">Reference assumptions</div>
+      <table><thead><tr><th>Investment / bucket</th><th>Capital</th><th>Income assumption</th><th>Role</th></tr></thead><tbody>
+        <tr><td>Detroit — existing 2 homes</td><td>$214K</td><td>~$1,250–$1,420/mo after tax (planning estimate)</td><td>Income-producing real estate</td></tr>
+        <tr><td>Monogram</td><td>$378K</td><td>Market-dependent</td><td>Stock portfolio managed by Alex, financial advisor</td></tr>
+        <tr><td>Wealthfront</td><td>$340K</td><td>Market-dependent</td><td>Temporary S&P 500 exposure; eventually invest elsewhere or move to Alex</td></tr>
+        <tr><td>UK deal</td><td>$115K</td><td>~$480–$525/mo after tax estimate</td><td>Illiquid alternative investment</td></tr>
+        <tr><td>Potential extra Detroit house</td><td>~$100–115K</td><td>Illustratively ~current-house economics, but deal-specific</td><td>Higher-income / higher-operational-risk option</td></tr>
+      </tbody></table>
+    </section>
+  </div>
+
+  <div class="footer">Planning tool only. Closing costs, mortgage rates, taxes, HOA, investment returns, refinancing terms, vacancy, maintenance, and tax treatment can change. Detroit and UK income figures are estimates, not guaranteed returns. Monogram and Wealthfront are equity-market investments and can decline materially over a 1–2 year horizon, so money needed for a near-term home should be separated from long-term risk capital.</div>
+</div>
+<script>
+const cashTable={
+1500000:{20:358500,30:504900,40:652000},1600000:{20:381900,30:538000,40:695000},1700000:{20:405300,30:571200,40:738000},1800000:{20:428700,30:604300,40:780000},1900000:{20:452100,30:637500,40:823000},2000000:{20:480500,30:675600,40:871000}}
+const els={price:document.querySelector('#price'),down:document.querySelector('#down'),ptax:document.querySelector('#ptax'),hoa:document.querySelector('#hoa'),insurance:document.querySelector('#insurance'),rate:document.querySelector('#rate'),uk:document.querySelector('#uk'),detroitAdd:document.querySelector('#detroitAdd'),wfToAlex:document.querySelector('#wfToAlex')}
+const fmt=n=>'$'+Math.round(n).toLocaleString(); const fmtK=n=>'~$'+Math.ceil(n/1000)+'K';
+function mortgagePI(price,downPct,rate){const p=price*(1-downPct/100),r=rate/100/12,n=360;return p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)}
+function cashNeeded(price,downPct){return cashTable[price][downPct]}
+function monthly(price,downPct){return mortgagePI(price,downPct,+els.rate.value)+(+els.ptax.value||0)+(+els.hoa.value||0)+(+els.insurance.value||0)}
+function render(){
+ const price=+els.price.value,down=+els.down.value;base=671000;
+ document.querySelector('#priceLabel').textContent='$'+(price/1e6).toFixed(1)+'M';
+ document.querySelector('#cashClose').textContent=fmtK(cashNeeded(price,down));
+ document.querySelector('#monthly').textContent=fmt(monthly(price,down));
+ document.querySelector('#homeRows').innerHTML=[20,30,40].map(d=>{const c=cashNeeded(price,d),m=monthly(price,d),left=base-c;return `<tr><td>${d}%</td><td>${fmtK(c)}</td><td>${fmt(m)}</td><td class="${left>=100000?'best':''}">${left>=0?fmtK(left):'Short '+fmtK(-left)}</td></tr>`}).join('');
+ const max=Math.max(...[20,30,40].map(d=>cashNeeded(price,d)));document.querySelector('#bars').innerHTML=[20,30,40].map((d,i)=>{const c=cashNeeded(price,d);return `<div class="barrow"><div class="barlabel">${d}% down</div><div class="track"><div class="fill ${i? 'alt':''}" style="width:${c/max*100}%"></div></div><div class="barval">${fmtK(c)}</div></div>`}).join('');
+ const uk=els.uk.checked?115000:0,det=els.detroitAdd.checked?115000:0,alex=+els.wfToAlex.value;document.querySelector('#wfLabel').textContent=fmtK(alex);
+ const reserve=Math.max(0,base-uk-det-alex);document.querySelector('#homeReserve').textContent=fmtK(reserve);
+ let income=1335; let notes=['Existing Detroit midpoint: ~$1,335/mo after tax']; if(els.uk.checked){income+=500;notes.push('UK: +~$500/mo')} if(els.detroitAdd.checked){income+=650;notes.push('illustrative extra Detroit house: +~$650/mo before financing differences')}
+ document.querySelector('#incomeOffset').textContent=fmt(income)+'/mo';document.querySelector('#incomeNote').textContent=notes.join(' · ')+'. Monogram / Wealthfront market returns are intentionally not counted as monthly spendable income.';
+}
+Object.values(els).forEach(el=>el.addEventListener('input',render));render();
+</script>
+</body>
+</html>
