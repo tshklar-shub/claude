@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tomer & Dor — Brooklyn Home & Investment Decision Dashboard</title>
   <style>
-    :root{--bg:#f6f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e6e9f0;--accent:#315efb;--good:#16794b;--warn:#a15c00;--soft:#eef3ff;--s2:#7b8cff;--s3:#9ca9ff}
+    :root{--bg:#f6f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e6e9f0;--accent:#315efb;--good:#16794b;--warn:#a15c00;--soft:#eef3ff;--s2:#7b8cff;--s3:#9ca9ff;--asset-green:#145c38;--obligation-red:#de7777;--deploy-green:#62b983}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
     .wrap{max-width:1180px;margin:0 auto;padding:28px 18px 60px}.hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:20px}.hero h1{font-size:clamp(28px,4vw,46px);line-height:1.05;margin:0 0 8px}.hero p{margin:0;color:var(--muted);max-width:760px}.pill{background:var(--soft);color:#2449c8;border:1px solid #dbe4ff;border-radius:999px;padding:8px 12px;font-weight:700;font-size:13px;white-space:nowrap}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.span4{grid-column:span 4}.span5{grid-column:span 5}.span7{grid-column:span 7}.span12{grid-column:span 12}.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:8px}.big{font-size:32px;font-weight:800;line-height:1.1}.sub{color:var(--muted);font-size:13px;margin-top:5px}.metric-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.metric{padding:12px;border-radius:12px;background:#fafbfe;border:1px solid var(--line)}.metric b{display:block;font-size:20px}.metric span{font-size:12px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.span4{grid-column:span 4}.span5{grid-column:span 5}.span7{grid-column:span 7}.span12{grid-column:span 12}.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:8px}.big{font-size:32px;font-weight:800;line-height:1.1}.big.asset{color:var(--asset-green)}.big.obligation{color:var(--obligation-red)}.big.deploy{color:var(--deploy-green)}.deploy-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}.deploy-cell{min-width:0}.deploy-cell+.deploy-cell{border-left:1px solid var(--line);padding-left:14px}.deploy-label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:4px}.sub{color:var(--muted);font-size:13px;margin-top:5px}.metric-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.metric{padding:12px;border-radius:12px;background:#fafbfe;border:1px solid var(--line)}.metric b{display:block;font-size:20px}.metric span{font-size:12px;color:var(--muted)}
     label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}.control{margin-bottom:14px} input[type=range]{width:100%} select,input[type=number]{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}.inline{display:grid;grid-template-columns:1fr 1fr;gap:12px}.note{font-size:13px;color:var(--muted);line-height:1.45}
     table{width:100%;border-collapse:collapse;font-size:14px} th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line)} th:first-child,td:first-child{text-align:left} th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.best{font-weight:800;color:var(--good)}
     .barbox{margin-top:12px}.barrow{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center;margin:10px 0}.track{height:12px;background:#edf0f5;border-radius:999px;overflow:hidden}.fill{height:100%;background:var(--accent);border-radius:999px}.fill.alt{background:var(--s2)}.barlabel{font-size:13px}.barval{text-align:right;font-weight:800;font-size:13px}
     .chart-wrap{margin-top:12px;overflow-x:auto}.chart{min-width:640px;height:330px;position:relative;padding:22px 20px 48px 58px}.chart-grid{position:absolute;left:58px;right:20px;top:22px;bottom:48px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),var(--line) 25%,transparent calc(25% + 1px))}.chart-ylabels{position:absolute;left:0;top:22px;bottom:48px;width:50px;display:flex;flex-direction:column;justify-content:space-between;text-align:right;font-size:11px;color:var(--muted)}.series{position:absolute;left:58px;right:20px;top:22px;bottom:48px;display:flex;align-items:flex-end;justify-content:space-around;gap:22px}.point-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}.cost-bar{width:min(90px,70%);border-radius:12px 12px 4px 4px;min-height:8px;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;color:#fff;font-size:12px;font-weight:800;transition:height .2s ease}.cost-bar.d20{background:var(--accent)}.cost-bar.d30{background:var(--s2)}.cost-bar.d40{background:#6776d9}.xlab{position:absolute;bottom:-30px;font-weight:800;font-size:13px}.saving{position:absolute;bottom:-46px;font-size:11px;color:var(--muted);white-space:nowrap}.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)}.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px}.dot.d20{background:var(--accent)}.dot.d30{background:var(--s2)}.dot.d40{background:#6776d9}
     .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.option{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.option h3{margin:0 0 6px;font-size:17px}.option p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}.option strong{display:block;margin-top:10px}.tag{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:5px 8px;margin-bottom:8px;background:#f0f2f7}.tag.good{background:#e9f7ef;color:var(--good)}.tag.warn{background:#fff4e5;color:var(--warn)}
     .footer{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.5}.callout{background:#172033;color:#fff;border:none}.callout .kicker,.callout .sub{color:#c7cfdf}.callout .big{font-size:27px}.callout p{color:#e3e7ef;line-height:1.5;margin:10px 0 0}
-    @media(max-width:850px){.span4,.span5,.span7{grid-column:span 12}.hero{align-items:flex-start;flex-direction:column}.options{grid-template-columns:1fr}.inline{grid-template-columns:1fr}.barrow{grid-template-columns:95px 1fr 75px}}
+    @media(max-width:850px){.span4,.span5,.span7{grid-column:span 12}.hero{align-items:flex-start;flex-direction:column}.options{grid-template-columns:1fr}.inline{grid-template-columns:1fr}.barrow{grid-template-columns:95px 1fr 75px}.deploy-grid{grid-template-columns:1fr}.deploy-cell+.deploy-cell{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:12px}}
   </style>
 </head>
 <body>
@@ -26,17 +26,17 @@
   </div>
 
   <div class="grid">
-    <section class="card span4"><div class="kicker">Net assets today</div><div class="big">$1.18M</div><div class="sub">Detroit $214K · Monogram $378K · Wealthfront $340K · SoFi $144K · Chase $99K</div></section>
-    <section class="card span4"><div class="kicker">Known future obligations</div><div class="big">$290K</div><div class="sub">Surrogacy $250K total · TLV taxes $40K</div></section>
-    <section class="card span4"><div class="kicker">Deployable capital</div><div class="big">$885K</div><div class="sub">About $671K without selling or otherwise monetizing Detroit</div></section>
+    <section class="card span4"><div class="kicker">Net assets today</div><div class="big asset">$1.18M</div><div class="sub">Detroit $214K · Monogram $378K · Wealthfront $340K · SoFi $144K · Chase $99K</div></section>
+    <section class="card span4"><div class="kicker">Known future obligations</div><div class="big obligation">$290K</div><div class="sub">Surrogacy $250K total · TLV taxes $40K</div></section>
+    <section class="card span4"><div class="kicker">Deployable capital</div><div class="deploy-grid"><div class="deploy-cell"><div class="deploy-label">With Detroit</div><div class="big deploy">$885K</div></div><div class="deploy-cell"><div class="deploy-label">Without Detroit</div><div class="big deploy">$671K</div></div></div><div class="sub">Shows the difference between treating Detroit as available capital versus keeping the properties intact.</div></section>
 
     <section class="card span5">
       <div class="kicker">1 · Choose a future Brooklyn home</div>
       <div class="control"><label for="price">Purchase price: <span id="priceLabel">$1.8M</span></label><input id="price" type="range" min="1500000" max="2000000" step="100000" value="1800000"></div>
       <div class="control"><label for="down">Down payment</label><select id="down"><option value="20">20%</option><option value="30" selected>30%</option><option value="40">40%</option></select></div>
       <div class="inline">
-        <div class="control"><label for="ptax">Monthly property tax</label><input id="ptax" type="number" value="900" step="50" min="0"></div>
-        <div class="control"><label for="hoa">Monthly common charges</label><input id="hoa" type="number" value="800" step="50" min="0"></div>
+        <div class="control"><label for="ptax">Monthly property tax</label><input id="ptax" type="number" value="1200" step="50" min="0"></div>
+        <div class="control"><label for="hoa">Monthly common charges</label><input id="hoa" type="number" value="400" step="50" min="0"></div>
       </div>
       <div class="inline">
         <div class="control"><label for="insurance">Monthly insurance</label><input id="insurance" type="number" value="75" step="25" min="0"></div>
@@ -44,7 +44,7 @@
       </div>
       <div class="metric-row">
         <div class="metric"><b id="cashClose">$605K</b><span>cash needed incl. closing costs</span></div>
-        <div class="metric"><b id="monthly">$9,914</b><span>estimated all-in / month</span></div>
+        <div class="metric"><b id="monthly">$9,814</b><span>estimated all-in / month</span></div>
       </div>
     </section>
 
