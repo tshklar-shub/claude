@@ -32,7 +32,7 @@
 
     <section class="card span5">
       <div class="kicker">1 · Choose a future Brooklyn home</div>
-      <div class="control"><label for="price">Purchase price: <span id="priceLabel">$1.8M</span></label><input id="price" type="range" min="1500000" max="2000000" step="100000" value="1800000"></div>
+      <div class="control"><label for="price">Purchase price: <span id="priceLabel">$1.8M</span></label><input id="price" type="range" min="1300000" max="2000000" step="100000" value="1800000"></div>
       <div class="control"><label for="down">Down payment</label><select id="down"><option value="20">20%</option><option value="30" selected>30%</option><option value="40">40%</option></select></div>
       <div class="inline">
         <div class="control"><label for="ptax">Monthly property tax</label><input id="ptax" type="number" value="1200" step="50" min="0"></div>
@@ -40,7 +40,7 @@
       </div>
       <div class="inline">
         <div class="control"><label for="insurance">Monthly insurance</label><input id="insurance" type="number" value="75" step="25" min="0"></div>
-        <div class="control"><label for="rate">Mortgage rate</label><input id="rate" type="number" value="6.71" min="1" max="15" step="0.05"></div>
+        <div class="control"><label for="rate">Mortgage rate</label><input id="rate" type="number" value="6.50" min="1" max="15" step="0.05"><div class="sub">Illustrative jumbo rate for a strong borrower profile; replace with lender quote when available.</div></div>
       </div>
       <div class="metric-row">
         <div class="metric"><b id="cashClose">$605K</b><span>cash needed incl. closing costs</span></div>
@@ -52,7 +52,7 @@
       <div class="kicker">2 · Home tradeoff by down payment</div>
       <table><thead><tr><th>Down</th><th>Cash needed</th><th>Monthly</th><th>Cash left from $671K</th></tr></thead><tbody id="homeRows"></tbody></table>
       <div class="barbox" id="bars"></div>
-      <p class="note">Cash-to-close values use the planning estimates developed for $1.5M–$2.0M Brooklyn condos. Figures shown in K are rounded up to the nearest thousand.</p>
+      <p class="note">Cash-to-close values use planning estimates for $1.3M–$2.0M Brooklyn condos. Figures shown in K are rounded up to the nearest thousand.</p>
     </section>
 
     <section class="card span12">
@@ -101,7 +101,7 @@
   <div class="footer">Planning tool only. Closing costs, mortgage rates, taxes, HOA, investment returns, refinancing terms, vacancy, maintenance, and tax treatment can change. Detroit and UK income figures are estimates, not guaranteed returns. Monogram and Wealthfront are equity-market investments and can decline materially over a 1–2 year horizon, so money needed for a near-term home should be separated from long-term risk capital.</div>
 </div>
 <script>
-const cashTable={1500000:{20:358500,30:504900,40:652000},1600000:{20:381900,30:538000,40:695000},1700000:{20:405300,30:571200,40:738000},1800000:{20:428700,30:604300,40:780000},1900000:{20:452100,30:637500,40:823000},2000000:{20:480500,30:675600,40:871000}};
+const cashTable={1300000:{20:312000,30:439000,40:566000},1400000:{20:336000,30:472000,40:609000},1500000:{20:358500,30:504900,40:652000},1600000:{20:381900,30:538000,40:695000},1700000:{20:405300,30:571200,40:738000},1800000:{20:428700,30:604300,40:780000},1900000:{20:452100,30:637500,40:823000},2000000:{20:480500,30:675600,40:871000}};
 const els={price:document.querySelector('#price'),down:document.querySelector('#down'),ptax:document.querySelector('#ptax'),hoa:document.querySelector('#hoa'),insurance:document.querySelector('#insurance'),rate:document.querySelector('#rate')};
 const fmt=n=>'$'+Math.round(n).toLocaleString(); const fmtK=n=>'~$'+Math.ceil(n/1000)+'K';
 function mortgagePI(price,downPct,rate){const p=price*(1-downPct/100),r=rate/100/12,n=360;if(r<=0)return p/n;return p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)}
