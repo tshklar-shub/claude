@@ -44,14 +44,14 @@
       </div>
       <div class="metric-row">
         <div class="metric"><b id="cashClose">$605K</b><span>cash needed incl. closing costs</span></div>
-        <div class="metric"><b id="monthly">$8,988</b><span>estimated all-in / month</span></div>
+        <div class="metric"><b id="monthly">$8,988</b><span>gross Brooklyn housing cost / month</span></div>
       </div>
     </section>
 
     <section class="card span7">
       <div class="kicker">2 · Home tradeoff by down payment</div>
       <div class="table-wrap"><table><thead><tr><th>Scenario</th><th>20% down</th><th>30% down</th><th>40% down</th><th>50% down</th></tr></thead><tbody id="homeRows"></tbody></table></div>
-      <p class="note"><strong>Detroit income is baked into the housing comparison:</strong> Keep Detroit offsets housing cost by ~$1,335/month after tax; Refi 65% offsets it by about $479/month after the modeled 6.25% refinance payment; Sell Detroit has no monthly offset. Green/red outlines still indicate whether there is enough cash to close.</p>
+      <p class="note"><strong>Gross housing cost</strong> is the Brooklyn mortgage + tax + common charges + insurance before Detroit. <strong>Effective housing cost</strong> subtracts the applicable Detroit after-tax monthly contribution: ~$1,335/month when keeping Detroit, ~$479/month after the modeled 65% refi, and $0 when Detroit is sold. Green/red outlines indicate whether there is enough cash to close.</p>
     </section>
 
     <section class="card span12">
@@ -115,7 +115,7 @@ function render(){const price=+els.price.value,down=+els.down.value,base=671000,
  const row=(label,values,classes=[],rowClass='')=>`<tr class="${rowClass}"><td><b>${label}</b></td>${values.map((v,i)=>`<td class="${classes[i]||''}">${v}</td>`).join('')}</tr>`;
  const cashVals=downOptions.map(d=>fmtK(cashNeeded(price,d)));
  const monthlyRaw=downOptions.map(d=>monthly(price,d));
- const monthlyVals=monthlyRaw.map(fmt);
+ const monthlyVals=monthlyRaw.map(m=>fmt(m)+'/mo');
  const keepRaw=downOptions.map(d=>base-cashNeeded(price,d));
  const refiRaw=downOptions.map(d=>refiCapital-cashNeeded(price,d));
  const sellRaw=downOptions.map(d=>sellCapital-cashNeeded(price,d));
@@ -124,13 +124,13 @@ function render(){const price=+els.price.value,down=+els.down.value,base=671000,
  const sellEffective=monthlyRaw.map(m=>fmt(m)+'/mo');
  document.querySelector('#homeRows').innerHTML=
    row('Cash needed',cashVals)+
-   row('Gross monthly housing cost',monthlyVals)+
+   row('Gross housing cost (before Detroit)',monthlyVals)+
    row('Cash left — Keep Detroit',keepRaw.map(signedCash),feasibilityClasses(keepRaw))+
-   row('Effective monthly — Keep Detroit',keepEffective,[],'income-row')+
+   row('Effective housing cost — Keep Detroit',keepEffective,[],'income-row')+
    row('Cash left — Refi Detroit 65%',refiRaw.map(signedCash),feasibilityClasses(refiRaw))+
-   row('Effective monthly — Refi Detroit 65%',refiEffective,[],'income-row')+
+   row('Effective housing cost — Refi Detroit 65%',refiEffective,[],'income-row')+
    row('Cash left — Sell Detroit',sellRaw.map(signedCash),feasibilityClasses(sellRaw))+
-   row('Effective monthly — Sell Detroit',sellEffective);
+   row('Effective housing cost — Sell Detroit',sellEffective);
  renderChart(price);setCashText('#keepCashLeft',base-cash);setCashText('#refiCashLeft',refiCapital-cash);setCashText('#sellCashLeft',sellCapital-cash);document.querySelector('#keepEffective').textContent=fmt(Math.max(0,grossMonthly-detroitIncome))+'/mo';document.querySelector('#refiEffective').textContent=fmt(Math.max(0,grossMonthly-refiIncome))+'/mo';document.querySelector('#sellEffective').textContent=fmt(grossMonthly)+'/mo';}
 Object.values(els).forEach(el=>el.addEventListener('input',render));render();
 </script>
