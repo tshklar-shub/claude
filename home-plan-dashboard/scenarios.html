@@ -32,7 +32,8 @@
     .balance-card{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff}
     .balance-title{font-size:13px;font-weight:850;margin-bottom:7px}
     .balance-row{display:flex;justify-content:space-between;gap:18px;padding:8px 0;border-bottom:1px solid #edf0f5;font-size:13px}
-    .balance-row span{color:var(--muted)}.balance-row b{text-align:right;white-space:nowrap}
+    .balance-row>span{color:var(--muted)}.balance-row b{text-align:right;white-space:nowrap}
+    .balance-value{text-align:right}.balance-value b{display:block}.balance-value small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
     .balance-row.total{border-bottom:0;padding-bottom:0;font-size:14px}.balance-row.total span,.balance-row.total b{color:var(--ink);font-weight:900}
     .capital-bridge{margin-top:14px;padding:13px 15px;border-radius:14px;background:#f2f5fb;color:#344054;font-size:13px;line-height:1.5}
     .capital-bridge b{color:var(--ink)}
@@ -44,6 +45,7 @@
     label{display:block;font-size:12px;font-weight:800;margin-bottom:6px;color:#3d4658}
     input,select{width:100%;padding:10px 11px;border:1px solid #d9dee8;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
     input[type=range]{padding:7px 0;border:0;background:transparent}
+    .suffix-field{position:relative}.suffix-field input{padding-right:34px}.suffix-field>span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;font-size:13px;pointer-events:none}
     .price-value{color:var(--accent);font-weight:900}
     .scenario-list{display:grid;gap:16px}
     .scenario{position:relative;overflow:hidden}
@@ -100,17 +102,17 @@
     <div class="stage-grid">
       <div class="balance-card">
         <div class="balance-title">Current assets</div>
-        <div class="balance-row"><span>Detroit — 2 rental homes</span><b>$214,000</b></div>
-        <div class="balance-row"><span>Monogram</span><b>$378,000</b></div>
-        <div class="balance-row"><span>Wealthfront</span><b>$340,000</b></div>
-        <div class="balance-row"><span>SoFi</span><b>$144,000</b></div>
-        <div class="balance-row"><span>Chase</span><b>$99,000</b></div>
+        <div class="balance-row"><span>Monogram</span><div class="balance-value"><b>$378,000</b><small>32.2% of assets</small></div></div>
+        <div class="balance-row"><span>Wealthfront</span><div class="balance-value"><b>$340,000</b><small>28.9% of assets</small></div></div>
+        <div class="balance-row"><span>Detroit — 2 rental homes</span><div class="balance-value"><b>$214,000</b><small>18.2% of assets</small></div></div>
+        <div class="balance-row"><span>SoFi</span><div class="balance-value"><b>$144,000</b><small>12.3% of assets</small></div></div>
+        <div class="balance-row"><span>Chase</span><div class="balance-value"><b>$99,000</b><small>8.4% of assets</small></div></div>
         <div class="balance-row total"><span>Total assets</span><b>$1,175,000</b></div>
       </div>
       <div class="balance-card">
         <div class="balance-title">Known liabilities & obligations</div>
-        <div class="balance-row"><span>Surrogacy</span><b>$250,000</b></div>
-        <div class="balance-row"><span>TLV taxes</span><b>$40,000</b></div>
+        <div class="balance-row"><span>Surrogacy</span><div class="balance-value"><b>$250,000</b><small>86.2% of obligations</small></div></div>
+        <div class="balance-row"><span>TLV taxes</span><div class="balance-value"><b>$40,000</b><small>13.8% of obligations</small></div></div>
         <div class="balance-row total"><span>Total obligations</span><b>$290,000</b></div>
       </div>
     </div>
@@ -126,7 +128,7 @@
         <div class="input-title">Brooklyn home</div>
         <div class="inputs">
           <div><label for="price">Purchase price: <span class="price-value" id="priceLabel">$1.8M</span></label><input id="price" type="range" min="1300000" max="2000000" step="100000" value="1800000" /></div>
-          <div><label for="rate">Mortgage interest rate</label><input id="rate" type="number" min="1" max="15" step="0.05" value="5.70" /></div>
+          <div><label for="rate">Mortgage interest rate</label><div class="suffix-field"><input id="rate" type="number" min="1" max="15" step="0.05" value="5.70" /><span>%</span></div></div>
           <div><label for="ptax">Monthly property tax</label><input id="ptax" type="number" min="0" step="50" value="1200" /></div>
           <div><label for="hoa">Monthly common charges / HOA</label><input id="hoa" type="number" min="0" step="50" value="400" /></div>
           <div><label for="insurance">Monthly insurance</label><input id="insurance" type="number" min="0" step="1" value="608" /></div>
@@ -139,7 +141,7 @@
           <div><label for="detroitValue">Current portfolio value</label><input id="detroitValue" type="number" min="0" step="5000" value="214000" /></div>
           <div><label for="detroitIncome">After-tax income / month</label><input id="detroitIncome" type="number" min="0" step="25" value="1335" /></div>
           <div><label for="refiLtv">Refinance LTV</label><select id="refiLtv"><option value="0.60">60%</option><option value="0.65" selected>65%</option><option value="0.70">70%</option><option value="0.75">75%</option></select></div>
-          <div><label for="refiRate">Refinance interest rate</label><input id="refiRate" type="number" min="1" max="15" step="0.05" value="6.25" /></div>
+          <div><label for="refiRate">Refinance interest rate</label><div class="suffix-field"><input id="refiRate" type="number" min="1" max="15" step="0.05" value="6.25" /><span>%</span></div></div>
         </div>
       </div>
     </div>
