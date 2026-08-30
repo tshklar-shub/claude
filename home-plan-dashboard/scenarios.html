@@ -23,6 +23,19 @@
     .panel-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
     .panel-head h2,.scenario h2{margin:0;font-size:24px}
     .panel-head p{margin:5px 0 0;color:var(--muted);font-size:13px}
+    .stage-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+    .stage-metric{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fafbfe}
+    .stage-metric span{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-bottom:5px}
+    .stage-metric b{font-size:25px;line-height:1.1}
+    .stage-metric.assets b{color:#145c38}.stage-metric.obligations b{color:#b05d5d}.stage-metric.deployable{background:#eef9f2;border-color:#d6eedf}.stage-metric.deployable b{color:var(--good)}
+    .stage-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+    .balance-card{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff}
+    .balance-title{font-size:13px;font-weight:850;margin-bottom:7px}
+    .balance-row{display:flex;justify-content:space-between;gap:18px;padding:8px 0;border-bottom:1px solid #edf0f5;font-size:13px}
+    .balance-row span{color:var(--muted)}.balance-row b{text-align:right;white-space:nowrap}
+    .balance-row.total{border-bottom:0;padding-bottom:0;font-size:14px}.balance-row.total span,.balance-row.total b{color:var(--ink);font-weight:900}
+    .capital-bridge{margin-top:14px;padding:13px 15px;border-radius:14px;background:#f2f5fb;color:#344054;font-size:13px;line-height:1.5}
+    .capital-bridge b{color:var(--ink)}
     .input-groups{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
     .input-group{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fbfcfe}
     .input-title{font-size:13px;font-weight:850;margin-bottom:12px}
@@ -60,8 +73,8 @@
     .cash-negative{color:var(--bad)}
     .keep .option{background:#fcfefc}.refi .option{background:#fcfdff}.sell .option{background:#fffdfa}
     .footnote{font-size:12px;color:var(--muted);line-height:1.5;margin:18px 2px 0}
-    @media(max-width:1000px){.input-groups{grid-template-columns:1fr}.scenario-head{grid-template-columns:1fr 1fr}.scenario-title{grid-column:1/-1}.options{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:650px){.wrap{padding:20px 12px 48px}.hero{align-items:flex-start;flex-direction:column}.inputs,.inputs.detroit{grid-template-columns:1fr 1fr}.scenario-head,.options{grid-template-columns:1fr}.scenario-title{grid-column:auto}.panel,.scenario{padding:16px}.headline-metric b{font-size:20px}}
+    @media(max-width:1000px){.input-groups,.stage-grid{grid-template-columns:1fr}.scenario-head{grid-template-columns:1fr 1fr}.scenario-title{grid-column:1/-1}.options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:650px){.wrap{padding:20px 12px 48px}.hero{align-items:flex-start;flex-direction:column}.inputs,.inputs.detroit{grid-template-columns:1fr 1fr}.stage-summary,.scenario-head,.options{grid-template-columns:1fr}.scenario-title{grid-column:auto}.panel,.scenario{padding:16px}.headline-metric b{font-size:20px}}
   </style>
 </head>
 <body>
@@ -74,6 +87,35 @@
     </div>
     <a class="back" href="./">Open original dashboard</a>
   </header>
+
+  <section class="panel" aria-labelledby="snapshot-title">
+    <div class="panel-head">
+      <div><div class="eyebrow">Current financial picture</div><h2 id="snapshot-title">Assets and known obligations</h2><p>This snapshot sets the starting point for the scenario calculations below.</p></div>
+    </div>
+    <div class="stage-summary">
+      <div class="stage-metric assets"><span>Total current assets</span><b>$1.18M</b></div>
+      <div class="stage-metric obligations"><span>Known liabilities & obligations</span><b>$290K</b></div>
+      <div class="stage-metric deployable"><span>Capital available before Detroit</span><b>$671K</b></div>
+    </div>
+    <div class="stage-grid">
+      <div class="balance-card">
+        <div class="balance-title">Current assets</div>
+        <div class="balance-row"><span>Detroit — 2 rental homes</span><b>$214,000</b></div>
+        <div class="balance-row"><span>Monogram</span><b>$378,000</b></div>
+        <div class="balance-row"><span>Wealthfront</span><b>$340,000</b></div>
+        <div class="balance-row"><span>SoFi</span><b>$144,000</b></div>
+        <div class="balance-row"><span>Chase</span><b>$99,000</b></div>
+        <div class="balance-row total"><span>Total assets</span><b>$1,175,000</b></div>
+      </div>
+      <div class="balance-card">
+        <div class="balance-title">Known liabilities & obligations</div>
+        <div class="balance-row"><span>Surrogacy</span><b>$250,000</b></div>
+        <div class="balance-row"><span>TLV taxes</span><b>$40,000</b></div>
+        <div class="balance-row total"><span>Total obligations</span><b>$290,000</b></div>
+      </div>
+    </div>
+    <div class="capital-bridge"><b>How the starting capital is derived:</b> $961K of non-Detroit assets − $290K of known obligations = <b>$671K available before choosing what to do with Detroit.</b></div>
+  </section>
 
   <section class="panel" aria-labelledby="assumptions-title">
     <div class="panel-head">
