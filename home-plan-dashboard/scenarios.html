@@ -45,6 +45,7 @@
     label{display:block;font-size:12px;font-weight:800;margin-bottom:6px;color:#3d4658}
     input,select{width:100%;padding:10px 11px;border:1px solid #d9dee8;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
     input[type=range]{padding:7px 0;border:0;background:transparent}
+    .prefix-field{position:relative}.prefix-field input{padding-left:28px}.prefix-field>span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;font-size:13px;pointer-events:none}
     .suffix-field{position:relative}.suffix-field input{padding-right:34px}.suffix-field>span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;font-size:13px;pointer-events:none}
     .price-value{color:var(--accent);font-weight:900}
     .scenario-list{display:grid;gap:16px}
@@ -129,17 +130,17 @@
         <div class="inputs">
           <div><label for="price">Purchase price: <span class="price-value" id="priceLabel">$1.8M</span></label><input id="price" type="range" min="1300000" max="2000000" step="100000" value="1800000" /></div>
           <div><label for="rate">Mortgage interest rate</label><div class="suffix-field"><input id="rate" type="number" min="1" max="15" step="0.05" value="5.70" /><span>%</span></div></div>
-          <div><label for="ptax">Monthly property tax</label><input id="ptax" type="number" min="0" step="50" value="1200" /></div>
-          <div><label for="hoa">Monthly common charges / HOA</label><input id="hoa" type="number" min="0" step="50" value="400" /></div>
-          <div><label for="insurance">Monthly insurance</label><input id="insurance" type="number" min="0" step="1" value="608" /></div>
-          <div><label for="baseCash">Capital available before Detroit</label><input id="baseCash" type="number" min="0" step="5000" value="671000" /></div>
+          <div><label for="ptax">Monthly property tax</label><div class="prefix-field"><input id="ptax" type="number" min="0" step="50" value="1200" /><span>$</span></div></div>
+          <div><label for="hoa">Monthly common charges / HOA</label><div class="prefix-field"><input id="hoa" type="number" min="0" step="50" value="400" /><span>$</span></div></div>
+          <div><label for="insurance">Monthly insurance</label><div class="prefix-field"><input id="insurance" type="number" min="0" step="1" value="608" /><span>$</span></div></div>
+          <div><label for="baseCash">Capital available before Detroit</label><div class="prefix-field"><input id="baseCash" type="number" min="0" step="5000" value="671000" /><span>$</span></div></div>
         </div>
       </div>
       <div class="input-group">
         <div class="input-title">Detroit portfolio</div>
         <div class="inputs detroit">
-          <div><label for="detroitValue">Current portfolio value</label><input id="detroitValue" type="number" min="0" step="5000" value="214000" /></div>
-          <div><label for="detroitIncome">After-tax income / month</label><input id="detroitIncome" type="number" min="0" step="25" value="1335" /></div>
+          <div><label for="detroitValue">Current portfolio value</label><div class="prefix-field"><input id="detroitValue" type="number" min="0" step="5000" value="214000" /><span>$</span></div></div>
+          <div><label for="detroitIncome">After-tax income / month</label><div class="prefix-field"><input id="detroitIncome" type="number" min="0" step="25" value="1335" /><span>$</span></div></div>
           <div><label for="refiLtv">Refinance LTV</label><select id="refiLtv"><option value="0.60">60%</option><option value="0.65" selected>65%</option><option value="0.70">70%</option><option value="0.75">75%</option></select></div>
           <div><label for="refiRate">Refinance interest rate</label><div class="suffix-field"><input id="refiRate" type="number" min="1" max="15" step="0.05" value="6.25" /><span>%</span></div></div>
         </div>
@@ -195,13 +196,13 @@ function loanPI(principal,annualRate,years=30){const r=annualRate/100/12,n=years
 function cashNeeded(price,downPct){return cashTable[price][downPct]}
 function grossMonthly(inputs,downPct){return loanPI(inputs.price*(1-downPct/100),inputs.rate)+inputs.ptax+inputs.hoa+inputs.insurance}
 function signedCash(value){return value>=0?fmtK(value):'Short '+fmtK(Math.abs(value))}
-function optionCards(inputs,startingCash,offset){return downOptions.map(down=>{const needed=cashNeeded(inputs.price,down),left=startingCash-needed,effective=Math.max(0,grossMonthly(inputs,down)-offset);return `<article class="option"><h3>${down}% down</h3><div class="option-line"><span>Cash needed</span><b>${fmtK(needed)}</b></div><div class="option-line"><span>Cash left</span><b class="${left>=0?'cash-positive':'cash-negative'}">${signedCash(left)}</b></div><div class="option-line"><span>Effective housing cost</span><b>${fmt(effective)}/mo</b></div></article>`}).join('')}
+function optionCards(inputs,startingCash,offset,showGross=false){return downOptions.map(down=>{const needed=cashNeeded(inputs.price,down),left=startingCash-needed,gross=grossMonthly(inputs,down),effective=Math.max(0,gross-offset),grossRow=showGross?`<div class="option-line"><span>Monthly housing cost<br>(before Detroit)</span><b>${fmt(gross)}/mo</b></div>`:'';return `<article class="option"><h3>${down}% down</h3><div class="option-line"><span>Cash needed</span><b>${fmtK(needed)}</b></div><div class="option-line"><span>Cash left</span><b class="${left>=0?'cash-positive':'cash-negative'}">${signedCash(left)}</b></div>${grossRow}<div class="option-line"><span>Effective housing cost</span><b>${fmt(effective)}/mo</b></div></article>`}).join('')}
 function render(){const inputs=getInputs(),refiPrincipal=inputs.detroitValue*inputs.refiLtv,refiDebtPayment=loanPI(refiPrincipal,inputs.refiRate),refiOffset=Math.max(0,inputs.detroitIncome-refiDebtPayment),keepStarting=inputs.baseCash,refiStarting=inputs.baseCash+refiPrincipal,sellStarting=inputs.baseCash+inputs.detroitValue;
   document.querySelector('#priceLabel').textContent='$'+(inputs.price/1e6).toFixed(1)+'M';
   document.querySelector('#keepStarting').textContent=fmtKRound(keepStarting);document.querySelector('#keepOffset').textContent=fmt(inputs.detroitIncome)+'/mo';document.querySelector('#keepEquity').textContent=fmtKRound(inputs.detroitValue);
   document.querySelector('#refiStarting').textContent=fmtKRound(refiStarting);document.querySelector('#refiOffset').textContent=fmt(refiOffset)+'/mo';document.querySelector('#refiProceeds').textContent=fmtKRound(refiPrincipal);document.querySelector('#refiPayment').textContent=fmt(refiDebtPayment)+'/mo modeled payment';
   document.querySelector('#sellStarting').textContent=fmtKRound(sellStarting);document.querySelector('#sellValue').textContent=fmtKRound(inputs.detroitValue);
-  document.querySelector('#keepOptions').innerHTML=optionCards(inputs,keepStarting,inputs.detroitIncome);document.querySelector('#refiOptions').innerHTML=optionCards(inputs,refiStarting,refiOffset);document.querySelector('#sellOptions').innerHTML=optionCards(inputs,sellStarting,0);
+  document.querySelector('#keepOptions').innerHTML=optionCards(inputs,keepStarting,inputs.detroitIncome,true);document.querySelector('#refiOptions').innerHTML=optionCards(inputs,refiStarting,refiOffset,true);document.querySelector('#sellOptions').innerHTML=optionCards(inputs,sellStarting,0);
 }
 Object.values(els).forEach(el=>el.addEventListener('input',render));
 render();
