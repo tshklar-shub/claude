@@ -65,20 +65,21 @@
     .headline-metric span{display:block;color:var(--muted);font-size:11px;font-weight:750;margin-bottom:5px}
     .headline-metric b{font-size:22px;line-height:1.1}
     .headline-metric small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
-    .options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    .option{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fff}
-    .option h3{margin:0 0 12px;font-size:15px}
-    .option-line{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;padding:7px 0;border-top:1px solid #edf0f5}
-    .option-line:first-of-type{border-top:0;padding-top:0}
-    .option-line span{color:var(--muted);font-size:11px;line-height:1.25}
-    .option-line b{text-align:right;font-size:14px;white-space:nowrap}
+    .scenario-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:15px}
+    .scenario-table{width:100%;min-width:880px;border-collapse:collapse;background:#fff;font-size:13px}
+    .scenario-table th,.scenario-table td{padding:12px 10px;border-bottom:1px solid #edf0f5;text-align:right;white-space:nowrap}
+    .scenario-table thead th{background:#f7f9fc;color:#475467;font-size:12px;font-weight:850}
+    .scenario-table th:first-child{text-align:left;position:sticky;left:0;z-index:1;background:#f7f9fc;min-width:190px}
+    .scenario-table tbody th{color:var(--muted);font-size:12px}
+    .scenario-table tbody tr:last-child th,.scenario-table tbody tr:last-child td{border-bottom:0}
+    .scenario-table .effective-row th,.scenario-table .effective-row td{font-weight:850;color:var(--ink)}
     .cash-positive{color:var(--good)}
     .cash-warning{color:var(--warn)}
     .cash-negative{color:var(--bad)}
-    .keep .option{background:#fcfefc}.refi .option{background:#fcfdff}.sell .option{background:#fffdfa}
+    .keep .scenario-table tbody th{background:#f7fcf9}.refi .scenario-table tbody th{background:#f7f9ff}.sell .scenario-table tbody th{background:#fffaf3}
     .footnote{font-size:12px;color:var(--muted);line-height:1.5;margin:18px 2px 0}
-    @media(max-width:1000px){.input-groups,.stage-grid{grid-template-columns:1fr}.scenario-head{grid-template-columns:1fr 1fr}.scenario-title{grid-column:1/-1}.options{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:650px){.wrap{padding:20px 12px 48px}.hero{align-items:flex-start;flex-direction:column}.inputs,.inputs.detroit{grid-template-columns:1fr 1fr}.stage-summary,.scenario-head,.options{grid-template-columns:1fr}.scenario-title{grid-column:auto}.panel,.scenario{padding:16px}.headline-metric b{font-size:20px}}
+    @media(max-width:1000px){.input-groups,.stage-grid{grid-template-columns:1fr}.scenario-head{grid-template-columns:1fr 1fr}.scenario-title{grid-column:1/-1}}
+    @media(max-width:650px){.wrap{padding:20px 12px 48px}.hero{align-items:flex-start;flex-direction:column}.inputs,.inputs.detroit{grid-template-columns:1fr 1fr}.stage-summary,.scenario-head{grid-template-columns:1fr}.scenario-title{grid-column:auto}.panel,.scenario{padding:16px}.headline-metric b{font-size:20px}.scenario-table th:first-child{min-width:165px}}
   </style>
 </head>
 <body>
@@ -157,7 +158,7 @@
         <div class="headline-metric"><span>Detroit monthly contribution</span><b id="keepOffset">—</b><small>after-tax estimate</small></div>
         <div class="headline-metric"><span>Detroit equity retained</span><b id="keepEquity">—</b><small>before future value changes</small></div>
       </div>
-      <div class="options" id="keepOptions"></div>
+      <div class="scenario-table-wrap" id="keepOptions"></div>
     </section>
 
     <section class="scenario refi" aria-labelledby="refi-title">
@@ -167,7 +168,7 @@
         <div class="headline-metric"><span>Detroit monthly contribution</span><b id="refiOffset">—</b><small>after refinance payment</small></div>
         <div class="headline-metric"><span>Refinance proceeds</span><b id="refiProceeds">—</b><small id="refiPayment">—</small></div>
       </div>
-      <div class="options" id="refiOptions"></div>
+      <div class="scenario-table-wrap" id="refiOptions"></div>
     </section>
 
     <section class="scenario sell" aria-labelledby="sell-title">
@@ -177,15 +178,15 @@
         <div class="headline-metric"><span>Detroit monthly contribution</span><b>$0/mo</b><small>properties are sold</small></div>
         <div class="headline-metric"><span>Modeled sale value</span><b id="sellValue">—</b><small>before sale costs and taxes</small></div>
       </div>
-      <div class="options" id="sellOptions"></div>
+      <div class="scenario-table-wrap" id="sellOptions"></div>
     </section>
   </div>
 
-  <p class="footnote">Planning tool only. Cash needed uses the same closing-cost assumptions as the original dashboard. The sell scenario does not deduct brokerage, transfer, legal or tax costs. Refinance proceeds and payments exclude lender closing costs. Rates, taxes, common charges, insurance, vacancies, maintenance and tax treatment can change.</p>
+  <p class="footnote">Planning tool only. Cash needed uses the same closing-cost assumptions as the original dashboard; the 25%, 35% and 45% columns are interpolated between the neighboring 10% assumptions. The sell scenario does not deduct brokerage, transfer, legal or tax costs. Refinance proceeds and payments exclude lender closing costs. Rates, taxes, common charges, insurance, vacancies, maintenance and tax treatment can change.</p>
 </main>
 
 <script>
-const downOptions=[20,30,40,50];
+const downOptions=[20,25,30,35,40,45,50];
 const cashTable={1300000:{20:312000,30:439000,40:566000,50:693500},1400000:{20:335000,30:472000,40:609000,50:746500},1500000:{20:358500,30:504900,40:652000,50:799000},1600000:{20:381900,30:538000,40:695000,50:852000},1700000:{20:405300,30:571200,40:738000,50:905000},1800000:{20:428700,30:604300,40:780000,50:956000},1900000:{20:452100,30:637500,40:823000,50:1009000},2000000:{20:480500,30:675600,40:871000,50:1066000}};
 const ids=['price','rate','ptax','hoa','insurance','baseCash','detroitValue','detroitIncome','refiLtv','refiRate'];
 const els=Object.fromEntries(ids.map(id=>[id,document.querySelector('#'+id)]));
@@ -194,17 +195,17 @@ const fmtK=n=>'~$'+Math.ceil(n/1000).toLocaleString()+'K';
 const fmtKRound=n=>'~$'+Math.round(n/1000).toLocaleString()+'K';
 const getInputs=()=>({price:+els.price.value,rate:+els.rate.value||0,ptax:+els.ptax.value||0,hoa:+els.hoa.value||0,insurance:+els.insurance.value||0,baseCash:+els.baseCash.value||0,detroitValue:+els.detroitValue.value||0,detroitIncome:+els.detroitIncome.value||0,refiLtv:+els.refiLtv.value||0,refiRate:+els.refiRate.value||0});
 function loanPI(principal,annualRate,years=30){const r=annualRate/100/12,n=years*12;if(principal<=0)return 0;if(r<=0)return principal/n;return principal*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)}
-function cashNeeded(price,downPct){return cashTable[price][downPct]}
+function cashNeeded(price,downPct){const row=cashTable[price];if(row[downPct]!==undefined)return row[downPct];const lower=Math.floor(downPct/10)*10,upper=lower+10,weight=(downPct-lower)/(upper-lower);return row[lower]+(row[upper]-row[lower])*weight}
 function grossMonthly(inputs,downPct){return loanPI(inputs.price*(1-downPct/100),inputs.rate)+inputs.ptax+inputs.hoa+inputs.insurance}
 function signedCash(value){return value>=0?fmtK(value):'Short '+fmtK(Math.abs(value))}
 function cashColor(value){return value<0?'cash-negative':value<100000?'cash-warning':'cash-positive'}
-function optionCards(inputs,startingCash,offset,showGross=false){return downOptions.map(down=>{const needed=cashNeeded(inputs.price,down),left=startingCash-needed,gross=grossMonthly(inputs,down),effective=Math.max(0,gross-offset),grossRow=showGross?`<div class="option-line"><span>Monthly housing cost<br>(before Detroit)</span><b>${fmt(gross)}/mo</b></div>`:'';return `<article class="option"><h3>${down}% down</h3><div class="option-line"><span>Cash needed</span><b>${fmtK(needed)}</b></div><div class="option-line"><span>Cash left</span><b class="${cashColor(left)}">${signedCash(left)}</b></div>${grossRow}<div class="option-line"><span>Effective housing cost</span><b>${fmt(effective)}/mo</b></div></article>`}).join('')}
+function scenarioTable(inputs,startingCash,offset){const values=downOptions.map(down=>{const needed=cashNeeded(inputs.price,down),left=startingCash-needed,gross=grossMonthly(inputs,down);return {down,needed,left,gross,effective:Math.max(0,gross-offset)}}),cells=render=>values.map(render).join('');return `<table class="scenario-table"><thead><tr><th>Metric</th>${cells(v=>`<th>${v.down}% down</th>`)}</tr></thead><tbody><tr><th>Cash needed</th>${cells(v=>`<td>${fmtK(v.needed)}</td>`)}</tr><tr><th>Cash left</th>${cells(v=>`<td class="${cashColor(v.left)}">${signedCash(v.left)}</td>`)}</tr><tr><th>Monthly housing cost<br>(before Detroit)</th>${cells(v=>`<td>${fmt(v.gross)}/mo</td>`)}</tr><tr class="effective-row"><th>Effective housing cost</th>${cells(v=>`<td>${fmt(v.effective)}/mo</td>`)}</tr></tbody></table>`}
 function render(){const inputs=getInputs(),refiPrincipal=inputs.detroitValue*inputs.refiLtv,refiDebtPayment=loanPI(refiPrincipal,inputs.refiRate),refiOffset=Math.max(0,inputs.detroitIncome-refiDebtPayment),keepStarting=inputs.baseCash,refiStarting=inputs.baseCash+refiPrincipal,sellStarting=inputs.baseCash+inputs.detroitValue;
   document.querySelector('#priceLabel').textContent='$'+(inputs.price/1e6).toFixed(1)+'M';
   document.querySelector('#keepStarting').textContent=fmtKRound(keepStarting);document.querySelector('#keepOffset').textContent=fmt(inputs.detroitIncome)+'/mo';document.querySelector('#keepEquity').textContent=fmtKRound(inputs.detroitValue);
   document.querySelector('#refiStarting').textContent=fmtKRound(refiStarting);document.querySelector('#refiOffset').textContent=fmt(refiOffset)+'/mo';document.querySelector('#refiProceeds').textContent=fmtKRound(refiPrincipal);document.querySelector('#refiPayment').textContent=fmt(refiDebtPayment)+'/mo modeled payment';
   document.querySelector('#sellStarting').textContent=fmtKRound(sellStarting);document.querySelector('#sellValue').textContent=fmtKRound(inputs.detroitValue);
-  document.querySelector('#keepOptions').innerHTML=optionCards(inputs,keepStarting,inputs.detroitIncome,true);document.querySelector('#refiOptions').innerHTML=optionCards(inputs,refiStarting,refiOffset,true);document.querySelector('#sellOptions').innerHTML=optionCards(inputs,sellStarting,0);
+  document.querySelector('#keepOptions').innerHTML=scenarioTable(inputs,keepStarting,inputs.detroitIncome);document.querySelector('#refiOptions').innerHTML=scenarioTable(inputs,refiStarting,refiOffset);document.querySelector('#sellOptions').innerHTML=scenarioTable(inputs,sellStarting,0);
 }
 Object.values(els).forEach(el=>el.addEventListener('input',render));
 render();
