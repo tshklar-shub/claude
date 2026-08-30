@@ -48,6 +48,18 @@
     .prefix-field{position:relative}.prefix-field input{padding-left:28px}.prefix-field>span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;font-size:13px;pointer-events:none}
     .suffix-field{position:relative}.suffix-field input{padding-right:34px}.suffix-field>span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800;font-size:13px;pointer-events:none}
     .price-value{color:var(--accent);font-weight:900}
+    .listing-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:14px}
+    .listing-tab{appearance:none;border:1px solid var(--line);border-radius:13px;background:#f7f9fc;color:#475467;padding:12px 13px;text-align:left;font:inherit;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+    .listing-tab:hover{border-color:#b9c5ea;background:#f3f6ff}
+    .listing-tab[aria-selected="true"]{border-color:#9db0ff;background:#eef3ff;box-shadow:inset 0 0 0 1px #cbd5ff;color:#2341a5}
+    .listing-tab b,.listing-tab span{display:block}.listing-tab b{font-size:13px}.listing-tab span{font-size:12px;margin-top:4px;font-weight:850}
+    .listing-view[hidden]{display:none}
+    .listing-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 15px;border:1px solid var(--line);border-radius:14px 14px 0 0;background:#fbfcfe}
+    .listing-address{font-size:15px;font-weight:900}.listing-facts{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.45}
+    .zillow-link{display:inline-flex;align-items:center;justify-content:center;padding:9px 12px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-size:12px;font-weight:850;white-space:nowrap}
+    .listing-preview{display:grid;place-items:center;min-height:190px;border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;padding:24px;text-align:center;background:linear-gradient(145deg,#f4f7ff,#fbfcff)}
+    .listing-preview-inner{max-width:520px}.listing-preview-icon{display:grid;place-items:center;width:44px;height:44px;margin:0 auto 10px;border-radius:13px;background:#fff;border:1px solid #dbe3f8;font-size:22px}
+    .listing-preview b{display:block;font-size:15px;margin-bottom:5px}.listing-preview p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
     .scenario-list{display:grid;gap:16px}
     .scenario{position:relative;overflow:hidden}
     .scenario::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px}
@@ -79,7 +91,7 @@
     .keep .scenario-table tbody th{background:#f7fcf9}.refi .scenario-table tbody th{background:#f7f9ff}.sell .scenario-table tbody th{background:#fffaf3}
     .footnote{font-size:12px;color:var(--muted);line-height:1.5;margin:18px 2px 0}
     @media(max-width:1000px){.input-groups,.stage-grid{grid-template-columns:1fr}.scenario-head{grid-template-columns:1fr 1fr}.scenario-title{grid-column:1/-1}}
-    @media(max-width:650px){.wrap{padding:20px 12px 48px}.hero{align-items:flex-start;flex-direction:column}.inputs,.inputs.detroit{grid-template-columns:1fr 1fr}.stage-summary,.scenario-head{grid-template-columns:1fr}.scenario-title{grid-column:auto}.panel,.scenario{padding:16px}.headline-metric b{font-size:20px}.scenario-table th:first-child{min-width:165px}}
+    @media(max-width:650px){.wrap{padding:20px 12px 48px}.hero{align-items:flex-start;flex-direction:column}.inputs,.inputs.detroit{grid-template-columns:1fr 1fr}.stage-summary,.scenario-head,.listing-tabs{grid-template-columns:1fr}.scenario-title{grid-column:auto}.panel,.scenario{padding:16px}.headline-metric b{font-size:20px}.scenario-table th:first-child{min-width:165px}.listing-summary{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
 <body>
@@ -150,6 +162,32 @@
     </div>
   </section>
 
+  <section class="panel" aria-labelledby="examples-title">
+    <div class="panel-head">
+      <div><div class="eyebrow">Homes in range</div><h2 id="examples-title">Example Park Slope listings</h2><p>Use the tabs to compare three current examples around the modeled purchase price.</p></div>
+    </div>
+    <div class="listing-tabs" role="tablist" aria-label="Example Park Slope homes">
+      <button class="listing-tab" id="listing-tab-1" type="button" role="tab" aria-selected="true" aria-controls="listing-panel-1"><b>222 16th St #5D</b><span>$1.825M</span></button>
+      <button class="listing-tab" id="listing-tab-2" type="button" role="tab" aria-selected="false" aria-controls="listing-panel-2" tabindex="-1"><b>249 18th St Unit 2</b><span>$1.975M</span></button>
+      <button class="listing-tab" id="listing-tab-3" type="button" role="tab" aria-selected="false" aria-controls="listing-panel-3" tabindex="-1"><b>9 Prospect Park W #1A</b><span>$1.695M</span></button>
+    </div>
+
+    <div class="listing-view" id="listing-panel-1" role="tabpanel" aria-labelledby="listing-tab-1">
+      <div class="listing-summary"><div><div class="listing-address">222 16th St #5D, Brooklyn, NY 11215</div><div class="listing-facts">$1,825,000 · 2 beds · 2 baths · 1,142 sq ft · $749/mo HOA</div></div><a class="zillow-link" href="https://www.zillow.com/homedetails/222-16th-St-5D-Brooklyn-NY-11215/464893313_zpid/" target="_blank" rel="noopener noreferrer">Open on Zillow ↗</a></div>
+      <div class="listing-preview"><div class="listing-preview-inner"><div class="listing-preview-icon" aria-hidden="true">⌂</div><b>Zillow keeps the full listing on its site</b><p>Use “Open on Zillow” to see photos, history and all listing details. The link opens in a new tab so this comparison stays in place.</p></div></div>
+    </div>
+
+    <div class="listing-view" id="listing-panel-2" role="tabpanel" aria-labelledby="listing-tab-2" hidden>
+      <div class="listing-summary"><div><div class="listing-address">249 18th St Unit 2, Brooklyn, NY 11215</div><div class="listing-facts">$1,975,000 · 3 beds · 2 baths · 1,542 sq ft · $682/mo HOA</div></div><a class="zillow-link" href="https://www.zillow.com/homedetails/249-18th-St-UNIT-2-Brooklyn-NY-11215/462832572_zpid/" target="_blank" rel="noopener noreferrer">Open on Zillow ↗</a></div>
+      <div class="listing-preview"><div class="listing-preview-inner"><div class="listing-preview-icon" aria-hidden="true">⌂</div><b>Zillow keeps the full listing on its site</b><p>Use “Open on Zillow” to see photos, history and all listing details. The link opens in a new tab so this comparison stays in place.</p></div></div>
+    </div>
+
+    <div class="listing-view" id="listing-panel-3" role="tabpanel" aria-labelledby="listing-tab-3" hidden>
+      <div class="listing-summary"><div><div class="listing-address">9 Prospect Park W Apt 1A, Brooklyn, NY 11215</div><div class="listing-facts">$1,695,000 · 2 beds · 2 baths · 1,200 sq ft · $3,742/mo HOA</div></div><a class="zillow-link" href="https://www.zillow.com/homedetails/9-Prospect-Park-W-APT-1A-Brooklyn-NY-11215/444367077_zpid/" target="_blank" rel="noopener noreferrer">Open on Zillow ↗</a></div>
+      <div class="listing-preview"><div class="listing-preview-inner"><div class="listing-preview-icon" aria-hidden="true">⌂</div><b>Zillow keeps the full listing on its site</b><p>Use “Open on Zillow” to see photos, history and all listing details. The link opens in a new tab so this comparison stays in place.</p></div></div>
+    </div>
+  </section>
+
   <div class="scenario-list">
     <section class="scenario keep" aria-labelledby="keep-title">
       <div class="scenario-head">
@@ -208,7 +246,11 @@ function render(){const inputs=getInputs(),refiPrincipal=inputs.detroitValue*inp
   document.querySelector('#keepOptions').innerHTML=scenarioTable(inputs,keepStarting,inputs.detroitIncome);document.querySelector('#refiOptions').innerHTML=scenarioTable(inputs,refiStarting,refiOffset);document.querySelector('#sellOptions').innerHTML=scenarioTable(inputs,sellStarting,0);
 }
 Object.values(els).forEach(el=>el.addEventListener('input',render));
+const listingTabs=[...document.querySelectorAll('[role="tab"]')];
+function selectListing(selectedTab){listingTabs.forEach(tab=>{const active=tab===selectedTab,panel=document.querySelector('#'+tab.getAttribute('aria-controls'));tab.setAttribute('aria-selected',active);tab.tabIndex=active?0:-1;panel.hidden=!active})}
+listingTabs.forEach(tab=>{tab.addEventListener('click',()=>selectListing(tab));tab.addEventListener('keydown',event=>{if(event.key!=='ArrowRight'&&event.key!=='ArrowLeft')return;event.preventDefault();const direction=event.key==='ArrowRight'?1:-1,next=listingTabs[(listingTabs.indexOf(tab)+direction+listingTabs.length)%listingTabs.length];selectListing(next);next.focus()})});
 render();
+selectListing(listingTabs[0]);
 </script>
 </body>
 </html>
