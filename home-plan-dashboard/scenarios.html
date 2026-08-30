@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tomer & Dor — Brooklyn Home Scenarios</title>
+  <style>
+    :root{
+      --bg:#f4f6fa;--card:#fff;--ink:#172033;--muted:#667085;--line:#e4e8f0;
+      --accent:#315efb;--good:#16794b;--good-soft:#eef9f2;--mid:#3150ae;
+      --mid-soft:#f0f4ff;--warn:#9b5800;--warn-soft:#fff7eb;--bad:#b42318;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 18px 64px}
+    .hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:20px}
+    .hero h1{font-size:clamp(30px,4vw,48px);line-height:1.04;margin:0 0 9px}
+    .hero p{margin:0;color:var(--muted);max-width:780px;line-height:1.5}
+    .back{display:inline-flex;align-items:center;padding:9px 13px;border-radius:999px;background:#fff;border:1px solid var(--line);color:#2948a8;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap}
+    .panel,.scenario{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px}
+    .panel{margin-bottom:18px}
+    .eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:850;margin-bottom:8px}
+    .panel-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
+    .panel-head h2,.scenario h2{margin:0;font-size:24px}
+    .panel-head p{margin:5px 0 0;color:var(--muted);font-size:13px}
+    .input-groups{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+    .input-group{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fbfcfe}
+    .input-title{font-size:13px;font-weight:850;margin-bottom:12px}
+    .inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .inputs.detroit{grid-template-columns:repeat(2,minmax(0,1fr))}
+    label{display:block;font-size:12px;font-weight:800;margin-bottom:6px;color:#3d4658}
+    input,select{width:100%;padding:10px 11px;border:1px solid #d9dee8;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+    input[type=range]{padding:7px 0;border:0;background:transparent}
+    .price-value{color:var(--accent);font-weight:900}
+    .scenario-list{display:grid;gap:16px}
+    .scenario{position:relative;overflow:hidden}
+    .scenario::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px}
+    .scenario.keep::before{background:var(--good)}
+    .scenario.refi::before{background:var(--accent)}
+    .scenario.sell::before{background:#d07a13}
+    .scenario-head{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(130px,.55fr));gap:12px;align-items:stretch;margin-bottom:16px}
+    .scenario-title{padding:4px 4px 4px 8px}
+    .scenario-title p{color:var(--muted);font-size:13px;line-height:1.45;margin:7px 0 0;max-width:600px}
+    .tag{display:inline-block;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:850;margin-bottom:7px}
+    .keep .tag{color:var(--good);background:var(--good-soft)}
+    .refi .tag{color:var(--mid);background:var(--mid-soft)}
+    .sell .tag{color:var(--warn);background:var(--warn-soft)}
+    .headline-metric{border:1px solid var(--line);background:#fafbfe;border-radius:14px;padding:13px}
+    .headline-metric span{display:block;color:var(--muted);font-size:11px;font-weight:750;margin-bottom:5px}
+    .headline-metric b{font-size:22px;line-height:1.1}
+    .headline-metric small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+    .options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .option{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fff}
+    .option h3{margin:0 0 12px;font-size:15px}
+    .option-line{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;padding:7px 0;border-top:1px solid #edf0f5}
+    .option-line:first-of-type{border-top:0;padding-top:0}
+    .option-line span{color:var(--muted);font-size:11px;line-height:1.25}
+    .option-line b{text-align:right;font-size:14px;white-space:nowrap}
+    .cash-positive{color:var(--good)}
+    .cash-negative{color:var(--bad)}
+    .keep .option{background:#fcfefc}.refi .option{background:#fcfdff}.sell .option{background:#fffdfa}
+    .footnote{font-size:12px;color:var(--muted);line-height:1.5;margin:18px 2px 0}
+    @media(max-width:1000px){.input-groups{grid-template-columns:1fr}.scenario-head{grid-template-columns:1fr 1fr}.scenario-title{grid-column:1/-1}.options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:650px){.wrap{padding:20px 12px 48px}.hero{align-items:flex-start;flex-direction:column}.inputs,.inputs.detroit{grid-template-columns:1fr 1fr}.scenario-head,.options{grid-template-columns:1fr}.scenario-title{grid-column:auto}.panel,.scenario{padding:16px}.headline-metric b{font-size:20px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Separate scenario view</div>
+      <h1>Three Detroit paths.<br />One Brooklyn purchase.</h1>
+      <p>Adjust the shared assumptions once, then see the starting cash, cash required, cash remaining and effective monthly housing cost for each Detroit strategy.</p>
+    </div>
+    <a class="back" href="./">Open original dashboard</a>
+  </header>
+
+  <section class="panel" aria-labelledby="assumptions-title">
+    <div class="panel-head">
+      <div><div class="eyebrow">Global parameters</div><h2 id="assumptions-title">Edit the assumptions</h2><p>Every scenario below updates from these inputs.</p></div>
+    </div>
+    <div class="input-groups">
+      <div class="input-group">
+        <div class="input-title">Brooklyn home</div>
+        <div class="inputs">
+          <div><label for="price">Purchase price: <span class="price-value" id="priceLabel">$1.8M</span></label><input id="price" type="range" min="1300000" max="2000000" step="100000" value="1800000" /></div>
+          <div><label for="rate">Mortgage interest rate</label><input id="rate" type="number" min="1" max="15" step="0.05" value="5.70" /></div>
+          <div><label for="ptax">Monthly property tax</label><input id="ptax" type="number" min="0" step="50" value="1200" /></div>
+          <div><label for="hoa">Monthly common charges / HOA</label><input id="hoa" type="number" min="0" step="50" value="400" /></div>
+          <div><label for="insurance">Monthly insurance</label><input id="insurance" type="number" min="0" step="25" value="75" /></div>
+          <div><label for="baseCash">Capital available before Detroit</label><input id="baseCash" type="number" min="0" step="5000" value="671000" /></div>
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-title">Detroit portfolio</div>
+        <div class="inputs detroit">
+          <div><label for="detroitValue">Current portfolio value</label><input id="detroitValue" type="number" min="0" step="5000" value="214000" /></div>
+          <div><label for="detroitIncome">After-tax income / month</label><input id="detroitIncome" type="number" min="0" step="25" value="1335" /></div>
+          <div><label for="refiLtv">Refinance LTV</label><select id="refiLtv"><option value="0.60">60%</option><option value="0.65" selected>65%</option><option value="0.70">70%</option><option value="0.75">75%</option></select></div>
+          <div><label for="refiRate">Refinance interest rate</label><input id="refiRate" type="number" min="1" max="15" step="0.05" value="6.25" /></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="scenario-list">
+    <section class="scenario keep" aria-labelledby="keep-title">
+      <div class="scenario-head">
+        <div class="scenario-title"><span class="tag">Income-first</span><h2 id="keep-title">Keep Detroit</h2><p>Keep both homes debt-free and apply their estimated after-tax rental income against the Brooklyn housing cost.</p></div>
+        <div class="headline-metric"><span>Starting cash</span><b id="keepStarting">—</b><small>Detroit stays untouched</small></div>
+        <div class="headline-metric"><span>Detroit monthly contribution</span><b id="keepOffset">—</b><small>after-tax estimate</small></div>
+        <div class="headline-metric"><span>Detroit equity retained</span><b id="keepEquity">—</b><small>before future value changes</small></div>
+      </div>
+      <div class="options" id="keepOptions"></div>
+    </section>
+
+    <section class="scenario refi" aria-labelledby="refi-title">
+      <div class="scenario-head">
+        <div class="scenario-title"><span class="tag">Liquidity + ownership</span><h2 id="refi-title">Refinance Detroit</h2><p>Unlock part of the Detroit value for closing while retaining the properties and the rental income remaining after the new loan payment.</p></div>
+        <div class="headline-metric"><span>Starting cash</span><b id="refiStarting">—</b><small>includes refinance proceeds</small></div>
+        <div class="headline-metric"><span>Detroit monthly contribution</span><b id="refiOffset">—</b><small>after refinance payment</small></div>
+        <div class="headline-metric"><span>Refinance proceeds</span><b id="refiProceeds">—</b><small id="refiPayment">—</small></div>
+      </div>
+      <div class="options" id="refiOptions"></div>
+    </section>
+
+    <section class="scenario sell" aria-labelledby="sell-title">
+      <div class="scenario-head">
+        <div class="scenario-title"><span class="tag">Maximum liquidity</span><h2 id="sell-title">Sell Detroit</h2><p>Add the full modeled Detroit value to the home fund. This maximizes starting cash but removes the monthly rental contribution.</p></div>
+        <div class="headline-metric"><span>Starting cash</span><b id="sellStarting">—</b><small>includes modeled sale value</small></div>
+        <div class="headline-metric"><span>Detroit monthly contribution</span><b>$0/mo</b><small>properties are sold</small></div>
+        <div class="headline-metric"><span>Modeled sale value</span><b id="sellValue">—</b><small>before sale costs and taxes</small></div>
+      </div>
+      <div class="options" id="sellOptions"></div>
+    </section>
+  </div>
+
+  <p class="footnote">Planning tool only. Cash needed uses the same closing-cost assumptions as the original dashboard. The sell scenario does not deduct brokerage, transfer, legal or tax costs. Refinance proceeds and payments exclude lender closing costs. Rates, taxes, common charges, insurance, vacancies, maintenance and tax treatment can change.</p>
+</main>
+
+<script>
+const downOptions=[20,30,40,50];
+const cashTable={1300000:{20:312000,30:439000,40:566000,50:693500},1400000:{20:335000,30:472000,40:609000,50:746500},1500000:{20:358500,30:504900,40:652000,50:799000},1600000:{20:381900,30:538000,40:695000,50:852000},1700000:{20:405300,30:571200,40:738000,50:905000},1800000:{20:428700,30:604300,40:780000,50:956000},1900000:{20:452100,30:637500,40:823000,50:1009000},2000000:{20:480500,30:675600,40:871000,50:1066000}};
+const ids=['price','rate','ptax','hoa','insurance','baseCash','detroitValue','detroitIncome','refiLtv','refiRate'];
+const els=Object.fromEntries(ids.map(id=>[id,document.querySelector('#'+id)]));
+const fmt=n=>'$'+Math.round(n).toLocaleString();
+const fmtK=n=>'~$'+Math.ceil(n/1000).toLocaleString()+'K';
+const fmtKRound=n=>'~$'+Math.round(n/1000).toLocaleString()+'K';
+const getInputs=()=>({price:+els.price.value,rate:+els.rate.value||0,ptax:+els.ptax.value||0,hoa:+els.hoa.value||0,insurance:+els.insurance.value||0,baseCash:+els.baseCash.value||0,detroitValue:+els.detroitValue.value||0,detroitIncome:+els.detroitIncome.value||0,refiLtv:+els.refiLtv.value||0,refiRate:+els.refiRate.value||0});
+function loanPI(principal,annualRate,years=30){const r=annualRate/100/12,n=years*12;if(principal<=0)return 0;if(r<=0)return principal/n;return principal*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)}
+function cashNeeded(price,downPct){return cashTable[price][downPct]}
+function grossMonthly(inputs,downPct){return loanPI(inputs.price*(1-downPct/100),inputs.rate)+inputs.ptax+inputs.hoa+inputs.insurance}
+function signedCash(value){return value>=0?fmtK(value):'Short '+fmtK(Math.abs(value))}
+function optionCards(inputs,startingCash,offset){return downOptions.map(down=>{const needed=cashNeeded(inputs.price,down),left=startingCash-needed,effective=Math.max(0,grossMonthly(inputs,down)-offset);return `<article class="option"><h3>${down}% down</h3><div class="option-line"><span>Cash needed</span><b>${fmtK(needed)}</b></div><div class="option-line"><span>Cash left</span><b class="${left>=0?'cash-positive':'cash-negative'}">${signedCash(left)}</b></div><div class="option-line"><span>Effective housing cost</span><b>${fmt(effective)}/mo</b></div></article>`}).join('')}
+function render(){const inputs=getInputs(),refiPrincipal=inputs.detroitValue*inputs.refiLtv,refiDebtPayment=loanPI(refiPrincipal,inputs.refiRate),refiOffset=Math.max(0,inputs.detroitIncome-refiDebtPayment),keepStarting=inputs.baseCash,refiStarting=inputs.baseCash+refiPrincipal,sellStarting=inputs.baseCash+inputs.detroitValue;
+  document.querySelector('#priceLabel').textContent='$'+(inputs.price/1e6).toFixed(1)+'M';
+  document.querySelector('#keepStarting').textContent=fmtKRound(keepStarting);document.querySelector('#keepOffset').textContent=fmt(inputs.detroitIncome)+'/mo';document.querySelector('#keepEquity').textContent=fmtKRound(inputs.detroitValue);
+  document.querySelector('#refiStarting').textContent=fmtKRound(refiStarting);document.querySelector('#refiOffset').textContent=fmt(refiOffset)+'/mo';document.querySelector('#refiProceeds').textContent=fmtKRound(refiPrincipal);document.querySelector('#refiPayment').textContent=fmt(refiDebtPayment)+'/mo modeled payment';
+  document.querySelector('#sellStarting').textContent=fmtKRound(sellStarting);document.querySelector('#sellValue').textContent=fmtKRound(inputs.detroitValue);
+  document.querySelector('#keepOptions').innerHTML=optionCards(inputs,keepStarting,inputs.detroitIncome);document.querySelector('#refiOptions').innerHTML=optionCards(inputs,refiStarting,refiOffset);document.querySelector('#sellOptions').innerHTML=optionCards(inputs,sellStarting,0);
+}
+Object.values(els).forEach(el=>el.addEventListener('input',render));
+render();
+</script>
+</body>
+</html>
