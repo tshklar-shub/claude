@@ -73,6 +73,7 @@
     .option-line span{color:var(--muted);font-size:11px;line-height:1.25}
     .option-line b{text-align:right;font-size:14px;white-space:nowrap}
     .cash-positive{color:var(--good)}
+    .cash-warning{color:var(--warn)}
     .cash-negative{color:var(--bad)}
     .keep .option{background:#fcfefc}.refi .option{background:#fcfdff}.sell .option{background:#fffdfa}
     .footnote{font-size:12px;color:var(--muted);line-height:1.5;margin:18px 2px 0}
@@ -196,7 +197,8 @@ function loanPI(principal,annualRate,years=30){const r=annualRate/100/12,n=years
 function cashNeeded(price,downPct){return cashTable[price][downPct]}
 function grossMonthly(inputs,downPct){return loanPI(inputs.price*(1-downPct/100),inputs.rate)+inputs.ptax+inputs.hoa+inputs.insurance}
 function signedCash(value){return value>=0?fmtK(value):'Short '+fmtK(Math.abs(value))}
-function optionCards(inputs,startingCash,offset,showGross=false){return downOptions.map(down=>{const needed=cashNeeded(inputs.price,down),left=startingCash-needed,gross=grossMonthly(inputs,down),effective=Math.max(0,gross-offset),grossRow=showGross?`<div class="option-line"><span>Monthly housing cost<br>(before Detroit)</span><b>${fmt(gross)}/mo</b></div>`:'';return `<article class="option"><h3>${down}% down</h3><div class="option-line"><span>Cash needed</span><b>${fmtK(needed)}</b></div><div class="option-line"><span>Cash left</span><b class="${left>=0?'cash-positive':'cash-negative'}">${signedCash(left)}</b></div>${grossRow}<div class="option-line"><span>Effective housing cost</span><b>${fmt(effective)}/mo</b></div></article>`}).join('')}
+function cashColor(value){return value<0?'cash-negative':value<100000?'cash-warning':'cash-positive'}
+function optionCards(inputs,startingCash,offset,showGross=false){return downOptions.map(down=>{const needed=cashNeeded(inputs.price,down),left=startingCash-needed,gross=grossMonthly(inputs,down),effective=Math.max(0,gross-offset),grossRow=showGross?`<div class="option-line"><span>Monthly housing cost<br>(before Detroit)</span><b>${fmt(gross)}/mo</b></div>`:'';return `<article class="option"><h3>${down}% down</h3><div class="option-line"><span>Cash needed</span><b>${fmtK(needed)}</b></div><div class="option-line"><span>Cash left</span><b class="${cashColor(left)}">${signedCash(left)}</b></div>${grossRow}<div class="option-line"><span>Effective housing cost</span><b>${fmt(effective)}/mo</b></div></article>`}).join('')}
 function render(){const inputs=getInputs(),refiPrincipal=inputs.detroitValue*inputs.refiLtv,refiDebtPayment=loanPI(refiPrincipal,inputs.refiRate),refiOffset=Math.max(0,inputs.detroitIncome-refiDebtPayment),keepStarting=inputs.baseCash,refiStarting=inputs.baseCash+refiPrincipal,sellStarting=inputs.baseCash+inputs.detroitValue;
   document.querySelector('#priceLabel').textContent='$'+(inputs.price/1e6).toFixed(1)+'M';
   document.querySelector('#keepStarting').textContent=fmtKRound(keepStarting);document.querySelector('#keepOffset').textContent=fmt(inputs.detroitIncome)+'/mo';document.querySelector('#keepEquity').textContent=fmtKRound(inputs.detroitValue);
